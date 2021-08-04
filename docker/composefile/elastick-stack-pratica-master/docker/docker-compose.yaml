@@ -1,0 +1,37 @@
+version: '2'
+services:
+    elasticsearch:
+            image: elasticsearch:7.4.2
+        ports:
+            - 9200:9200
+        volumes:
+            - ./data:/usr/share/elasticsearch/data
+    kibana:
+        image: kibana
+        links:
+            - elasticsearch
+        ports:
+            - 5601:5601
+        depends_on:
+            - elasticsearch
+    logstash:
+        build: ./logstash
+        depends_on:
+            - elasticsearch
+        ports:
+            - 5000:5000
+        links:
+            - elasticsearch
+    nginx:
+        image: nginx
+        hostname: webserver-01
+        ports:
+            - 8080:80
+        links:
+            - logstash
+        depends_on:
+            - logstash
+        logging:
+            driver: syslog
+            options:
+                syslog-address: "tcp://localhost:5000"

@@ -1,0 +1,17 @@
+1-arquivo do docker compose
+ version: '3'
+services:
+  web:
+    build: . //o buil mostra que ele vai usar um docker file como imagem e o ponto (.) pra mostrar que o arquivo está no diretório atual
+    ports:
+     - "5000:5000"
+  redis:
+    image: "redis:alpine" //segundo service é um container com a imagem do redis
+
+2-arquivo dockerfile
+
+FROM python:3.4-alpine // usa essa imagem
+ADD . /code //adiciona o que tem no diretório atual pra dentro desse diretório
+WORKDIR /code //trabaha nesta pasta
+RUN pip install -r requirements.txt //executa esse comando
+CMD ["python", "app.py"] //mantém essa aplicação rodando em foreground

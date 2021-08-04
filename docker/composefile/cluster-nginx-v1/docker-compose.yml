@@ -1,0 +1,61 @@
+version: '3'
+services:
+        nginx1:
+                #imagem
+                image: nginx
+                #sempre iniciar com o SO
+                restart: always
+                container_name: nginx1
+                #subnet que ira utilizar
+                networks:
+                        - net-backend
+                volumes:
+                        - "./pasta1/index.html:/usr/share/nginx/html/index.html"
+                ports:
+                        - "8081:80"
+
+        nginx2:
+                #imagem
+                image: nginx
+                #sempre iniciar com o SO
+                restart: always
+                container_name: nginx2
+                #subnet que ira utilizar
+                networks:
+                        - net-backend
+                volumes:
+                        - "./pasta2/index.html:/usr/share/nginx/html/index.html"
+                ports:
+                        - "8082:80"
+
+        nginx3:
+                #imagem
+                image: nginx
+                #sempre iniciar com o SO
+                restart: always
+                container_name: nginx3
+                #subnet que ira utilizar
+                networks:
+                        - net-backend
+                volumes:
+                        - "./pasta3/index.html:/usr/share/nginx/html/index.html"
+                ports:
+                        - "8083:80"
+        nginx4:
+                #imagem
+                image: nginx
+                #sempre iniciar com o SO
+                restart: always
+                container_name: nginx4
+                #subnet que ira utilizar
+                networks:
+                        - net-backend
+                volumes:
+                        - "./pasta4/index4.html:/usr/share/nginx/html/index.html"
+                ports:
+                        - "8084:80"
+        
+networks:
+        net-backend:
+
+
