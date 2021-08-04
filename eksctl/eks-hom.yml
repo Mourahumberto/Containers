@@ -1,0 +1,71 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: homolog
+  region: us-east-1
+
+vpc:
+  id: "vpc-054a8cf25c301cefa"  # (optional, must match VPC ID used for each subnet below)
+  subnets:
+    # must provide 'private' and/or 'public' subnets by availibility zone as shown
+    public:
+      us-east-1a:
+        id: "subnet-0b81d219aaaa32f22"
+ 
+      us-east-1b:
+        id: "subnet-03d39cc19a9866824"
+
+      us-east-1c:
+        id: "subnet-0478a9cb26bee35d8"
+    
+    private:
+      us-east-1a:
+        id: "subnet-0b81d219aaaa32f22"
+ 
+      us-east-1b:
+        id: "subnet-0f2074841cb8b5db9"
+
+      us-east-1c:
+        id: "subnet-0478a9cb26bee35d8"
+
+nodeGroups:
+  - name: ng-1
+    instanceType: t2.medium
+    minSize: 2
+    maxSize: 5
+    desiredCapacity: 3
+    volumeSize: 250
+    labels: {role: worker}
+    tags:
+      nodegroup-role: worker
+    ssh:
+            publicKeyName: EKSHomolog
+  
+  - name: ng-teste
+    instanceType: t2.medium
+    minSize: 1
+    maxSize: 5
+    volumeSize: 100
+    privateNetworking: true
+    ssh:
+      publicKeyName: EKSHomolog
+    
+  - name: ng-testando
+    instanceType: t2.medium
+    minSize: 1
+    maxSize: 5
+    volumeSize: 100
+    privateNetworking: true
+    ssh:
+      publicKeyName: EKSHomolog
+
+  - name: ng-10
+    instanceType: t2.medium
+    minSize: 1
+    maxSize: 5
+    volumeSize: 100
+    privateNetworking: true
+    ssh:
+      publicKeyName: EKSHomolog
+

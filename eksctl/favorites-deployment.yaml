@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: favorites
+  name: favorites
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: favorites
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: favorites
+    spec:
+      containers:
+      - image: 138272065686.dkr.ecr.us-east-1.amazonaws.com/core-favorites
+        name: favorites
+        resources: {}
+status: {}

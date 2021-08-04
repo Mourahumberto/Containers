@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: app-ingress
+spec:
+  rules:
+  - host: kubernetes.hom-bpp.com.br # Mude para o seu endereço
+    http:
+      paths:
+      # - backend:
+      #     serviceName: appsvc1
+      #     servicePort: 80
+      #   path: /app1
+      # - backend:
+      #     serviceName: appsvc2
+      #     servicePort: 80
+      #   path: /app2
+      - backend:
+          serviceName: authorizationshim
+          servicePort: 8810
+        path: /
+      # - backend:
+      #     serviceName: paymentaccountshim
+      #     servicePort: 9956
+      #   path: /

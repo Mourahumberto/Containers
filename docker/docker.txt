@@ -1,0 +1,356 @@
+#############################################################################################################
+											DOCKER
+#############################################################################################################
+
+-para saber informações da verion do docker
+$ docker version
+
+-interface gráfca para container 
+portainer.io
+
+--------------------------------------------IMAGES-----------------------------------------------------------
+Imagens: são a base pra criação de um container elas são estáticas.
+formas de criação
+docker commit e Dockerfile
+
+-lista as imagens
+$ docker images
+
+-para remover uma imagem
+$ docker image rm nomeimagem
+
+-para remover todas as imagens que não estão sendo usadas por nem um container
+$ docker prune -a
+
+buildando uma imagem com o Dockerfile
+$ docker build -t core_gatewayapi:1.0 .
+
+criando outra tag pra imagem
+$ docker tag core_gatewayapi:1.0 138272065686.dkr.ecr.us-east-1.amazonaws.com/core_gatewayapi:latest
+
+fazendo o push
+docker push 138272065686.dkr.ecr.us-east-1.amazonaws.com/core_gatewayapi:1.0
+docker push 138272065686.dkr.ecr.us-east-1.amazonaws.com/core_gatewayapi:latest
+
+assim como o o .gitignore tem também o .dockerignore
+
+ler sobre multistage build.
+--------------------------------------------CONTAINER adm básica---------------------------------------
+
+----------------comandos para inicialização--------------------------
+
+-para executar um container
+$ docker run [options] IMAGE [command] [args]
+- vai dar nome ao container vai ter iteração mas em background
+$ docker run --name containerubuntu -itd ubuntu:18:04
+1) --name containerubuntu -> nome do container
+2) i interativo, d em background
+3) ubuntu:18:04 -> imagem usada
+
+- o container sempre tem uma razão de existir, desta forma o container vai dar ping 5 vezes e depois irá parar de existir
+$ docker run --name containerubuntu -itd ubuntu:18:04 ping -c 5 8.8.8.8
+
+-para executar vários comandos no run
+$ docker run debian apt-get update && apt-get install nano
+
+
+--------------comandos para o container------------------------------
+
+-lista os containers ativos
+$ docker ps
+
+-lista todos os containers
+$ docker ps -a
+
+-para pausar um container
+$ docker container stop containername
+
+-para startar um container
+$ docker container start containername
+
+-para remover um container
+$ docker container rm containername
+
+-para remover todos os containers inativos
+$ docker container prune
+
+- para inspectionar informações do container, com uma saída em JSON.
+$ docker container inspect nomecontainer
+
+-Alterando a saída do inspect apenas com o que seja necessário
+$ docker container inspect --format='{{.Config.Image}}' 
+
+-para verificar os logs em realtime
+$ docker container logs -f nomecontainer
+
+-para verificar o consume de cada container em sua máquina
+$ docker container stats
+
+-entrar no container
+$ docker attach containername
+saida sem matar
+$ ctrl p q
+
+-executar comando em um container ativo
+$ docker exec nomecontainer ps axu
+
+-para entrar no container também
+$ docker exec -it nomecontainer bash
+
+-ele faz em background e o -c para burlar o número de aspas
+$ docker exec -d nomecontainer bash -c "echo 'aula03' >> /tmp/aula03"
+
+-----------------copiando arquivos-----------------------------------
+
+-copiando arquivos do container para a máquina no diretório atual
+$ docker cp containername:/tmp/aula03 .
+
+-copiando o arquivo da máquina para o container
+$ docker cp arquivo nomecontainer:/tmp/
+
+-para salvar o container, fazendo um backup em um arquivo
+$ docker export nomecontainer
+
+-para recuperar o arquivo
+$ docker import nomecontainer
+-- porém o docker trata esse container agora como uma imagem terá que restartar um container com essa imagem. Teremos que subir um container com essa imagem.
+$ docker run -it --name novocontainer nomecontainer bash
+
+-para salvar uma imagem
+$ docker save imagemname
+
+-para recuperar uma imagem
+$ docker load imagemname
+
+
+--------------------------------------------CONTAINER NETWORK---------------------------------------
+
+-abstração de rede atraves da engine do docker
+
+-para verificar os networks do docker
+$ docker networks ls
+
+-BRIDGE: esse modo é o padrão, todo container se inicia com ele caso não seja especificado.
+ -> ela cria uma camad que o container possa ter sua propria eth
+ -> uma pont entre o host e o container
+
+-para verificar os parametros de uma rede, gateway e subnet
+$ docker network inspect bridge
+
+-docker0
+-veth -> rede lógica de cada container
+
+-para a conexão do mundo externo com o docker precisa ser exposta uma porta. Na inicialização do container podemos expor a porta
+ -p 8080:80 -> desta forma ele usa a porta 8080 do host direcionando para a 80 do container
+ -p 192.168.1.100:8080:80
+
+ -NETWORK DRIVER HOST
+  -não há isolamento de rede entre o host e o container.
+  -não a necessidade de mapeamento de portas, porém se o container usar a porta 80 nem o host nem outros container irão usar essa porta.
+ $ docker run -itd -name containername --network host ubunto:18.04
+
+- mostrará detalhes dessa interface
+$ docker network inspect host
+
+-OVERLAY DOCKER NETWORK
+-altamente usada em clusters de dockers
+
+-MACVLAN DOCKER NETWORK
+
+
+#USER-DENINED BRIDGE
+- melhor usar um bridge definido e não no docker0 172.17.0.1/16
+- desta forma você pode criar varios grupos de rede
+- cada container pode conectar e desconectar de redes definidas.
+
+- criando a subnet
+$ docker network create --subnet 10.0.0.0/24 nomenetwork
+
+- listando as subnets
+$ docker network ls
+
+- mostrar detalhes do network
+$ docker network inspect nomenetwork
+
+- criando um container com o network criado
+$ docker run -itd --name nomecontainer --net nomenetwork ubuntu:18.04
+
+- criando um container com o network criado e um ip escolhido, pouco comum, geralmente o dhcp do docker faz.
+$ docker run -itd --name nomecontainer --net nomenetwork --ip 10.0.0.4 ubuntu:18.04
+
+
+--------------------------------------------CONTAINER VOLUMES---------------------------------------
+
+$ docker volume ls
+
+-o container é volátil, caso queira persistir algum conteúdo isso deve ser mapeado.
+
+#BIND MOUNT
+- forma de persistência de dados através de mapeamento de pastas do host com o container
+$ docker run -itd -name apache -p 9090:80 -v /home/bpp/documentos:/usr/local/apache2/htdocs httpd:2.4
+- não é uma pasta aleatória dentro do container, foi visto na documentação onde ficavam os arquivos do site
+-controle de data, pois a data do container está a 3 horas na frente. o :ro é que o container só pode ler e não escrever nesse arquivo.
+$ $ docker run -itd -name apache -p 9090:80 -v /etc/localtime:/etc/localtime:ro httpd:2.4
+
+#VOLUME
+- forma de persistência de dados através da engine do docker, mapeando uma pasta do container dentro de um volume persistênte gerenciado
+pela engine do docker.
+- uso em produção
+- completamente gerenciado pelo docker
+- pode ser usado em cluster e volumes externos
+$ docker run -itd -name apache -p 9090:80 -v datasite:/usr/local/apache2/htdocs httpd:2.4
+$ docker run -itd -name apache -p 9090:80 -v datasite:/usr/local/apache2/htdocs -v /etc/localtime:/etc/localtime:ro httpd:2.4
+
+-para fazer cópia precisamos usar o cp caso não estaja no formato bind mount
+$ docker cp index.html nomecontainer:/usr/local/apache2/htdocs
+
+- copiando do container para máquina
+$ docker cp nomecontainer:/usr/local/apache2/htdocs/index.html .
+
+# MEMORY
+- pesistência em memória do host.
+$ docker run -itd --name containernome --tmpfs /tmp ubuntu:18.04
+
+
+
+
+-mostra o tamanho do container
+$ docker ps -s
+
+-o docker guarda seu dados na seguinte pasta
+ /var/lib/docker/
+
+
+--------------------------------------------CONTAINER CRIANDO IMAGEM---------------------------------------
+
+#DOCKER COMMIT
+- você pode criar um container com uma imagem base, fazer as mudanças e instalar pacotes necessários e em seguida stopar 
+o container e criar a imagem. 
+$ docker commit nomecontainer nomeimagem:tag
+-porém as mudanças feitas nessa imagem não garantem a inicialização de algum serviço.
+
+#DOCKER BUILD
+- diferente do commit ele é mais confiável, pois você pode escolher o que vai inicializar 
+- usa o Dockerfile
+- mais usado em produção
+- automatiza processo de criação de imagens
+
+1) Criação do Dockerfile
+*******************************
+FROM ubuntu:18.04
+RUN apt-get update
+RUN apt-get install apache2 -y
+*******************************
+
+$ docker build -t nomedaimagem:1.0 .
+ou pode ser invocando o caminho absoluto do arquivo
+$ docker build -t nomedaimagem:1.0 /home/bpp/projetos/docker/Dockerfile
+
+-caso o arquivo não esteja com o nome de Dockerfile
+$ docker build -t nomedaimagem -f nomefile
+
+-como a imagem não tem um comando padrão para iniciar o apache2 teremos que iniciar na criação do container
+$ docker run -d --name containerapache -p 8080:80 nomedaimagem:1.0 /usr/bin/apache2ctl -D FOREGROUND
+
+--no-cache=true
+pode ser usado para ele não utilizar o cache das imagens baixadas, nos casos as layers
+
+#Cada instrução passada pelo Dockerfile vira uma laayer
+
+###########################COMANDOS PARA O DOCKERFILE####################
+
+FROM ubuntu:18.04
+-para usar a seguinte imagem base
+
+RUN apt-get update && \
+apt-get install -y \
+apache2 \
+vim
+- pode ser usado desta forma igual é usado no bash
+
+RUN ["apt-get", "install", "apache2", "-y"]
+- ou pode ser usado no formato JSON menos usado.
+	
+COPY . /app
+- copia um arquivo da sua máquina para dentro da imagem
+
+WORKDIR /a
+WORKDIR b
+WORKDIR c
+- mostra qual será a pasta onde estará o terminal no caso a saida do pwd seria /a/b/c
+
+EXPOSE 80
+- informa qual porta será disponivel
+
+VOLUME /var/www/html/
+- pesquisar mais sobre
+
+
+-Todas as imagens possuem um comando padrão [CMD e ENTRYPOINT]
+
+###CMD
+-comando padrão pode ser sobreescrito
+-CMD pode ser usado igual o RUN, na forma de shell ou exec
+CMD ps axu
+ou
+-desta forma precisamos passar o caminho completo de onde está o binário
+CMD ["/usr/bin/wc","--help"]
+
+1.1)criação de novo Dockerfile
+*************************************************
+FROM ubuntu:18.04
+RUN apt-get update && apt-get install apache2 -y
+WORKDIR /var/www/html
+COPY index.html .
+EXPOSE 80
+CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
+*************************************************
+
+###ENTRYPOINT
+- comando padrão, porém ele espera um paramêtro então ele não pode ser sobrescrito
+- neste caso ele, força que o próximo comando seja apenas parametros para o entypoint
+
+ex:)
+#ping localhost
+ENTRYPOINT ["/bin/ping"]
+CMD ["localhost"]
+ou
+ENTRYPOINT["/bin/ping", "localhost"]
+ou
+-geralmente os entrypoint das baseimages é o /bin/sh -C
+CMD ping local host
+
+-o entrypoint pode invocar um .sh, geralmente em grandes imagens como do nginx no final o entrypoint incova um script
+-se tiver um entrypoint que passe um comando, o cmd só poderá passar pra ele parametros do comando, se não ele dará erro.
+
+1.2)novo dockerfile
+**************************************************
+FROM busybox
+ENTRYPOINT ["ping", "localhost"]
+**************************************************
+- se no docker run for passado algum comando que não seja parametro para o "ping localhost" dará erro a criação do container.
+- para burlar o entrypoint em um container na inicialização precisamos usar a option --entrypoint
+
+
+
+###################BOAS PRÁTICAS DOCKERFILE###########################################
+
+1- Containers Efêmeros
+- Ele é efêmero (passageiro e transitório), o container pode ser parado, destruído e reconstruídos.
+
+
+
+
+
+
+
+
+##################################DICAS##############################################
+
+-para limitar o uso de memória de um container com o docker run precisamos liberar a memória swap
+$ sudo vi /etc/default/grub
+# GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"
+$ sudo update-grub
+$ docker stop containername
+$ docker update -m 1G containername
+

@@ -1,0 +1,26 @@
+#############################################################################################################
+											DOCKER-COMPOSE
+#############################################################################################################
+
+-ADMNISTRAÇÃO BÁSICA COM COMPOSE
+
+- sobe apenas um service
+$ docker-compose up SERVICE_NAME
+
+- força que o docker crie os containers no lugar dos outros pois por padrão apenas sobe os que estão estopados.
+$ docker-compose up -d --force-recreate
+
+- apaga containers e networks
+$ docker-compose down
+
+- apaga containers networks e volumes
+$ docker-compose down -v
+
+-paga imagens 
+$ docker-compose down --rmi all
+
+
+#docker-compose ps
+
+#docker-compose top
+saber o consumo de memória e cpu dos serviços

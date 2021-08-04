@@ -1,0 +1,467 @@
+KUBERNETES
+site oficial: https://kubernetes.io/
+github: https://github.com/kubernetes/kubernetes
+importante: https://12factor.net/pt_br/
+
+Conceitos
+diferente do docker quando você cria um container você já pode acessar ele, no Kubernetes depois de um deploy você precisa
+cria um service pra expor esses serviços.
+
+pod -> replicaset -> deployment -> services -> ingress
+
+1)instala o docker
+2)instala o kubernetes
+	-conseguindo a linha de join do master para por nos works
+	$ kubeadm token create --print-join-command
+
+3)instala um podnetwork para que os nodes possam se conversar.
+	-kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+
+
+COMANDOS
+verificando os nós do cluster
+$ kubectl get nodes
+
+criando um deployment
+$ kubectl create deployment web --image=nginx
+
+criando um deployment e expondo a porta
+$ kubectl create deployment web --image=nginx --port=80
+
+listando os deployments
+$ kubectl get deployments.apps
+
+esclando esse deployment
+$ kubectl scale --replicas=10 deployment web
+
+removendo um deployment
+kubectl delete deployments.apps web
+
+criando um arquivo de 
+$ kubectl get deployments.apps web2 -o yaml > meu_primeiro_deployment.yaml
+
+criando um arquivo yaml para criação de um pod
+kubectl run --image=nginx giropops-nginx --dry-run=client -o yaml > giropops-pod.yaml
+
+criando um arquivo yaml para criação de um deploymant
+kubectl create deployment giropops --image=nginx --dry-run=client -o yaml > giropops-deployment.yaml
+
+criando um deployment a partir de um arquivo
+$ kubectl create -f meu_primeiro_deployment.yaml
+
+caso você tenha modificado o arquivo .yaml e precise atualizar o que já foi criado
+$ kubectl apply -f meu_primeiro_deployment.yaml
+
+caso precise editar algo que está rodando sem que não tenha o .yaml
+$ kubectl edit deployments.apps primeiro-deployment
+
+deletando um deployment a partir de um arquivo
+$ kubectl delete -f meu_primeiro_deployment.yaml
+
+verificando os pods
+$ kubectl get pods
+
+!!! os services servem para você expor as portas dos seus containers, para ser acessado externamente
+criando um service para um deployment 
+$ kubectl expose deployment web2
+
+
+verifica os services criados
+$ kubectl get services
+ex:web      ClusterIP   10.105.208.205   <none>        80/TCP    105s
+no caso clusterip só pode ser visto dentro do cluster
+
+deletando um service
+$ kubectl delete service meu-web
+
+criando um serviço que pode ser acessado externamente
+$ kubectl expose deployment web2 --type=NodePort
+ex: meu-web      NodePort    10.111.88.124   <none>        80:31964/TCP   5s
+desta forma pode ser acessado de fora do cluster. nesse caso pega o ip da máquina:31964 a porta que ele exportou
+
+expondo a porta de um pod
+kubectl expose deployment web2 --type=NodePort --port 80
+
+
+mostra onde está sendo exposto o service
+$ kubectl get service
+
+mostra todos os endpoints dos pods
+$ kubectl get endpoints
+
+mostra os deployments e o dns usado
+$ kubectl get deployments.apps --all-namespaces
+
+mostra o describe do service
+$ kubectl describe service meu-web
+
+mostra o describe no deployment
+$ kubectl describe deployments.apps primeiro-deployment
+
+mostra o describe no pod
+$ kubectl describe pods primeiro-deployment-5b4948f9d9-6pfhr
+
+
+$ kubectl expose deployment meu-web --type=LoadBalancer
+
+NAMESPACES
+podemos criar um namespaces e aplicar limites a ele.
+
+criando um namespaces
+$ kubectl create namespaces giropops
+
+- podemos criar limits ou quotas para cada namespace
+https://kubernetes.io/docs/tasks/administer-cluster/manage-resources/
+
+
+aplicando esse limits a um namespace
+$ 
+
+NODES
+
+tras toda a descrição do nó e até quais containers estão rodando nele
+$ kubectl describe node ip-172-31-73-233
+
+-taints: eesa opção se colocar NoSchedule o nó para de receber mais containers, o master tem essa flag.
+
+deixando um nó com NoSchedule
+$ kubectl taint node ip-172-31-73-233 key1=value:NoSchedule
+
+deixando ele normal
+$ kubectl taint node ip-172-31-73-233 key1:NoSchedule-
+
+-taints: essa opção se colocar NoExecute retira todos os nós de um node e aloca em outro nó, usado para fazer manutenção em
+um nó.
+
+deixando um nó com NoExecute
+$ kubectl taint node ip-172-31-73-233 key1=value:NoExecute
+
+deixando ele normal, mas não rebalaceia o cluster
+$ kubectl taint node ip-172-31-73-233 key1:NoExecute-
+
+
+DEPLOYMENTS
+
+SERVICES
+- Disponibiliza um deployment ou pod para acesso interno ou externo, normalmente dividido em 3 categorias.
+1- NodePort
+2- ClusterIP
+3- LoadBalancer
+
+LABELS
+como verificar as labels que foram postas nos deployments
+kubectl get pods -l dc=UK
+ou
+kubectl get pods -L dc
+
+por label nos nodes
+$ kubectl label nodes ip-172-31-73-233.ec2.internal type=t3.medium
+
+tirar label dos nodes
+$ kubectl label nodes ip-172-31-73-233.ec2.internal type-
+
+sobre escrevendo um label
+$ kubectl labes nodes ip-172-31-73-233.ec2.internal type=t3.large --overwrite
+no depeloyment se você quiser evidênciar onde quer que ele suba o deployment em um certo nó colocar no yaml
+nodeSelector
+	type=t3.large
+!!! se ele não achar nem um nó com essa flag ele não sobe o deploy
+
+removendo todos os label
+$ kubectl label nodes ip-172-31-73-233.ec2.internal --all
+
+REPLICASET 
+é o cara que controla o número de replicas do nosso deployment.
+Também fica encarregado de guardar a última versão do deployment casoo precise ser feito rollback e rollout
+
+DEAMONSET
+ Desta forma cria um pod em todos os nós. e caso seja criado algum novo nó, ele sobe um pod do daemonset
+
+SET 
+outra forma sem o edit
+update em uma imagem
+$ kubectl set image daemon-set-primeiro nginx=nginx:1.15.0
+
+
+ROLLOUTS E ROLLBACKS
+- o kubernetes sempre deixa salva os pods da versão atual e da versão passada, desta forma conseguimos fazer rollbacks de forma rápida.
+kubectl 
+
+verificar o deploy anterior
+$ kubectl rollout history deployment web2 
+
+saber mais sobre os dois deploys
+$ kubectl rollout history deployment web2 --revision=2
+
+voltando a versão
+$ kubectl rollout undo daemonset daemon-set-primeiro --to-revision=1
+
+DEBuGS
+entrando em um certo pod
+$ kubectl exec -ti gatewayapi-59bfcc846f-ngmkw -- /bin/bash
+
+-verificando o contexto
+$ kubectl config get-contexts
+
+-escolhendo um cluster para usar
+$ kubectl config use-context my-cluster-name
+
+- passando um novo kubeconfig 
+$ kubectl cluster-info --kubeconfig=caminho_para_seu_arquivo_kubeconfig
+link:https://docs.aws.amazon.com/pt_br/eks/latest/userguide/create-kubeconfig.html
+
+- deletando um contexto
+$ kubectl config delete-context humberto.neto@aws.bpp@hom.us-east-1.eksctl.io
+
+- adicionando um novo contexto
+$ aws eks --region <region-code> update-kubeconfig --name <cluster_name>
+
+
+
+CRIANDO A PARTIR DE YAML
+kubectl apply -f ./my-manifest.yaml            # criar recurso(s)
+kubectl apply -f ./my1.yaml -f ./my2.yaml      # criar a partir de vários arquivos
+kubectl apply -f ./dir                         # criar recurso(s) em todos os arquivos de manifesto no diretório
+kubectl apply -f https://git.io/vPieo          # criar recurso(s) a partir de URL
+kubectl create deployment nginx --image=nginx  # iniciar uma única instância do nginx
+kubectl diff -f ./my-manifest.yaml # Compara o estado atual do cluster com o estado em que o cluster estaria se o manifesto fosse aplicado.
+
+
+EMPTYDIR
+- é um diretório no qual é criado no container e assim que o container morre ele apaga esses dados também.
+usado geralmente pra por logs da aplicação. 
+
+PERSISTENT VOLUME (PV E PVC)
+
+
+CRONJOBS
+- executa um job em um container e morre, exemplo em primeiro-cronjob.yaml.
+
+# kubectl create -f primeiro-cron.yaml
+
+# kubectl get cronjobs
+
+# kubectl describe cronjobs.batch giropops-cron
+
+# kubectl get jobs --watch
+
+# kubectl get cronjob giropops-cron
+
+SECRETS
+
+# echo -n "descomplicando-k8s" > secret.txt
+
+- criando um secret e passando ele como arquivo, para ficar dentro do container
+# kubectl create secret generic my-secret --from-file=secret.txt
+
+# kubectl describe secret my-secret
+
+# kubectl get secret
+
+# kubectl get secret my-secret -o yaml
+
+- os secrets são codificado em base64, então para de
+# echo 'ZGVzY29tcGxpY2FuZG8tazhz' | base64 --decode
+
+- criando um secret literal que pode ser passado como variável de ambiente para o container. ex: pod-envsecret.yaml
+# kubectl create secret generic my-literal-secret --from-literal user=linuxtips --from-literal password=catota
+
+# kubectl describe secret my-literal-secret
+
+
+CONFIGMAPS
+- podemos criar arquivos de configurações, variáveis de ambiente ou chave valor com o configmap que serão usados no POD.
+ex: se eu crio um configmap de env, dentro dos ccontainers selecionados terão essa variável de ambiente.
+
+criando uma configmap, na mesma linha de forma literal diretamente e por arquivos
+$ kubectl create configmap cores-frutas --from-literal uva=roxa --from-file=preferido --from-file=frutas/ 
+
+verificando as configmaps existentes
+$ kubectl get configmap
+$ kubectl describe configmap
+
+exemplo de criar um pod com o configmap
+$ kubectl create -f pod-configmap.yaml
+
+
+INITCONTAINERS
+- serve para executar alguma tarefa que o serviço vá precisar quando iniciar o pod.
+ex: caso precise pupular um banco de dados, ou criar chaves no redis.
+nginx-initcontainer.yaml
+
+RBAC
+- criando usuário no kubernetes para acessar o cluster, podemos criar restrições para esse usuário.
+
+-criando um usuário
+$ kubectl create serviceaccount humberto
+
+-verificar os usuários
+$ kubectl get serviceaccount
+
+verificando as roles
+$ kubectl get clusterrole
+
+
+
+- verificando as roles
+$ kubectl describe clusterrole view
+$ kubectl describe clusterrole cluster-admin
+
+- criando um clusterrolebinding e associando a um usuário
+$ kubectl create clusterrolebinding bpp --serviceaccount=default:humberto --clusterrole=cluster-admin
+
+
+HELM
+- helm é um gerenciador de pacotes para o kubernetes, assim como é um gerenciador apt do debian.
+Podemos instalar várias aplicações no cluster kubernetes, como o prometheus.
+a V2 do helm tinha que acessar ao tiller dentro do cluster a V3 já se comunica com a api do kubernetes.
+
+CHART
+chart.yaml é onde ficará toda a entrega da sua aplicação.
+values.yaml onde ficam os valores para o cluster
+templates recebe os valores e monta a aplicação.
+
+ 
+1- instala o helm
+0- instalação do helm
+https://helm.sh/docs/intro/install/
+
+0- inicialização do helm
+https://helm.sh/docs/intro/quickstart/
+
+helm repo update
+
+procuras no helm
+helm search hub wordpress
+
+onde tem os repos do helm
+https://artifacthub.io/
+helm search repo jenkins
+helm show values jenkins/jenkins
+
+upgrade de values
+-para verificar e fazer alterações nos values
+helm show values jenkins/jenkins > values.yaml
+
+-depois de alterado
+helm upgrade my-jenkins jenkins/jenkins --values .\values.yaml
+
+0- verificando o número de serviços instalados no helm
+helm list
+
+verificando as revisões
+helm history my-jenkins
+
+fazendo um rollback
+helm rollback my-jenkins
+
+7- instalação de pacotes
+$ helm search prometheus
+$ helm install --namespace=monitoring --name=prometheus --version=11.12.1 --set alertmanager.persistentVolume.enabled=false,server.persistentVolume.enabled=false stable/prometheus
+$ helm search grafana
+$ helm install --namespace=monitoring --name=grafana --version=5.5.7 --set=adminUser=admin,adminPassword=admin,service.type=NodePort stable/grafana
+
+CRIANDO CHARTS PARA SUAS APIS
+helm create chart my-api
+
+
+INGRESS
+-Nginx Ingress
+o ingress vai está atuando em cima de um service criado e o service atua em cima de um deploy,
+desta forma precisamos criar um deploy da aplicação em seguida um service desse deploy e por final criar um ingress.
+
+
+Tudo necessário para criar o nginx ingress
+1- criar um namespace para o nginx
+$ kubectl create namespace ingress
+
+2-criei um deployment com o default backend para que fosse chamado quando o cliente acessasse uma url que não existe.
+$ kubectl create -f default-backend.yaml -n ingress
+obs: colocando o que tme a ver com o nginx nesse namespace ingress
+
+3- criando um service para o deployment do default backend
+$ kubectl create -f service-default-backend.yaml
+
+4 - Em seguida cria um configmap com a funcionalidade de ..
+$ kubectl create -f nginx-ingress-controlles-config-map.yaml 
+
+5 - cria um serviceaccount, no caso criando um user
+$ kubectl create -f nginx-ingress-controller-service-account.yaml -n ingress
+
+6 - criando regras que seram asocciadas ao usuário do nginx 
+$ nginx-ingress-controller-clusterrole.yaml -n ingress
+ 
+7 -  associando as regras criadas ao usuário criado
+$ nginx-ingress-controller-clusterrolebinding.yaml -n ingress
+
+8 - criando de fato o deployment do nginx crontroller
+kubectl create -f nginx-ingress-controller-deployment.yaml -n ingress
+
+9- criando um ingress para o serviço de status do inginx
+$ kubectl create -f nginx-ingress.yaml -n ingress
+
+10 criando o service do ingress controler
+$ kubectl create -f nginx-ingress-controller-service.yaml -n ingress
+
+11- criando o ingress para outros serviços
+$ kubectl create -f app-ingress.yaml
+
+ou 
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.40.2/deploy/static/provider/aws/deploy.yaml
+link: https://kubernetes.github.io/ingress-nginx/deploy/#aws
+
+ou com ssl
+
+verificando o ingress
+kubectl describe ingress app-ingress 
+
+logs
+kubectl ingress-nginx logs -f -n ingress-nginx 
+
+
+Podem ser 
+
+CALCULOS P/ NODES
+1vCPU = 1000 Milicores
+- se a máquina não tiver mais espaço de cpu mesmo tendo de memória o pod não será alocado nesta máquina.
+E virse-versa com memória.
+
+- Definimos o limite de memória e cpu no deployment
+
+HPA (Horizontal Pod Autoscaler)
+- ele define o número mínimo de réplicas e o número máximo, com o parâmetro de recurso utilizado.
+
+verificar os HPS
+$ kubectl get hpa
+
+criando um loop para teste
+while true; do wget
+
+
+
+
+##########################################3
+#  FERRAMENTAS IMPORTANTES 				  #
+###########################################
+
+1- stern para visualização de logs
+$ mv stern_linux_amd64 /usr/local/bin/stern
+$ sudo mv /usr/local/bin/stern_linux_amd64 /usr/local/bin/stern
+$ chmod +x /usr/local/bin/stern
+
+github: https://github.com/wercker/stern
+
+
+2- kubectx kubectlns
+
+3- popeye para visualizar as vulnerabilidade do seu cluster
+$ wget https://github.com/derailed/popeye/releases/download/v0.9.0/popeye_Linux_x86_64.tar.gz
+$ tar -xvzf popeye_Linux_x86_64.tar.gz 
+$ sudo mv popeye /usr/local/bin/
+$ sudo chmod +x /usr/local/bin/popeye 
+$ popeye help
+$ popeye -A
+
+github: https://github.com/derailed/popeye
+

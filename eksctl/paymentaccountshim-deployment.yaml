@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: paymentaccountshim
+  name: paymentaccountshim
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: paymentaccountshim
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: paymentaccountshim
+    spec:
+      containers:
+      - image: 138272065686.dkr.ecr.us-east-1.amazonaws.com/core_paymentaccountshim
+        name: paymentaccountshim
+        resources: {}
+status: {}

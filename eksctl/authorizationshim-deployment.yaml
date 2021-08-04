@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: authorizationshim
+  name: authorizationshim
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: authorizationshim
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: authorizationshim
+    spec:
+      containers:
+      - image: 138272065686.dkr.ecr.us-east-1.amazonaws.com/core_authorizationshim
+        name: authorizationshim
+        resources: {}
+status: {}
