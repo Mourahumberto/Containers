@@ -1,0 +1,8 @@
+#instalando openshift
+https://computingforgeeks.com/how-to-run-local-openshift-cluster-with-minishift/
+
+Comandos usados no cli do openshift
+
+comando usado para verificar os projetos
+$ oc projects
+
