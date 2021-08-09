@@ -51,7 +51,7 @@ services:
                 networks:
                         - net-backend
                 volumes:
-                        - "./pasta4/index4.html:/usr/share/nginx/html/index.html"
+                        - "./pasta4/index.html:/usr/share/nginx/html/index.html"
                 ports:
                         - "8084:80"
         

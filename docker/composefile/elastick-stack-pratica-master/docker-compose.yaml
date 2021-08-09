@@ -1,13 +1,13 @@
 version: '2'
 services:
     elasticsearch:
-            image: elasticsearch:7.4.2
+        image: elasticsearch:7.4.2
         ports:
             - 9200:9200
         volumes:
             - ./data:/usr/share/elasticsearch/data
     kibana:
-        image: kibana
+        image: kibana:7.14.0
         links:
             - elasticsearch
         ports:
