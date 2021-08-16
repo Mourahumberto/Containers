@@ -62,6 +62,10 @@ $ kubectl delete -f meu_primeiro_deployment.yaml
 verificando os pods
 $ kubectl get pods
 
+verificando pods com labels
+$ kubectl get pods -l environment=production,tier=frontend
+ex: /manifest/deployments/deploy1.yaml
+
 !!! os services servem para você expor as portas dos seus containers, para ser acessado externamente
 criando um service para um deployment 
 $ kubectl expose deployment web2
