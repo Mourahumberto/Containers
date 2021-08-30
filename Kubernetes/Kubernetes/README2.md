@@ -1,1272 +1,1489 @@
-# Kubernetes
+# Descomplicando Kubernetes Day 2
 
 ## Sumário
 
 <!-- TOC -->
-- [Descomplicando Kubernetes Day 1](#descomplicando-kubernetes-day-1)
+
+- [Descomplicando Kubernetes Day 2](#descomplicando-kubernetes-day-2)
   - [Sumário](#sumário)
-- [O quê preciso saber antes de começar?](#o-quê-preciso-saber-antes-de-começar)
-  - [Qual distro GNU/Linux devo usar?](#qual-distro-gnulinux-devo-usar)
-  - [Alguns sites que devemos visitar](#alguns-sites-que-devemos-visitar)
-  - [E o k8s?](#e-o-k8s)
-  - [Arquitetura do k8s](#arquitetura-do-k8s)
-  - [Portas que devemos nos preocupar](#portas-que-devemos-nos-preocupar)
-  - [Tá, mas qual tipo de aplicação eu devo rodar sobre o k8s?](#tá-mas-qual-tipo-de-aplicação-eu-devo-rodar-sobre-o-k8s)
-  - [Conceitos-chave do k8s](#conceitos-chave-do-k8s)
-- [Aviso sobre os comandos](#aviso-sobre-os-comandos)
-- [Minikube](#minikube)
-  - [Requisitos básicos](#requisitos-básicos)
-  - [Instalação do Minikube no GNU/Linux](#instalação-do-minikube-no-gnulinux)
-  - [Instalação do Minikube no MacOS](#instalação-do-minikube-no-macos)
-  - [kubectl: alias e autocomplete](#kubectl-alias-e-autocomplete)
-  - [Instalação do Minikube no Microsoft Windows](#instalação-do-minikube-no-microsoft-windows)
-  - [Iniciando, parando e excluindo o Minikube](#iniciando-parando-e-excluindo-o-minikube)
-  - [Certo, e como eu sei que está tudo funcionando como deveria?](#certo-e-como-eu-sei-que-está-tudo-funcionando-como-deveria)
-  - [Descobrindo o endereço do Minikube](#descobrindo-o-endereço-do-minikube)
-  - [Acessando a máquina do Minikube via SSH](#acessando-a-máquina-do-minikube-via-ssh)
-  - [Dashboard](#dashboard)
-  - [Logs](#logs)
-- [Microk8s](#microk8s)
-  - [Requisitos básicos](#requisitos-básicos-1)
-  - [Instalação do MicroK8s no GNU/Linux](#instalação-do-microk8s-no-gnulinux)
-    - [Versões que suportam Snap](#versões-que-suportam-snap)
-  - [Instalação no Windows](#instalação-no-windows)
-    - [Instalando o Chocolatey](#instalando-o-chocolatey)
-      - [Instalando o Multipass](#instalando-o-multipass)
-    - [Utilizando Microk8s com Multipass](#utilizando-microk8s-com-multipass)
-  - [Instalando o Microk8s no Mac](#instalando-o-microk8s-no-mac)
-    - [Instalando o Brew](#instalando-o-brew)
-    - [Instalando o Microk8s via Brew](#instalando-o-microk8s-via-brew)
-- [Kind](#kind)
-  - [Instalação no GNU/Linux](#instalação-no-gnulinux)
-  - [Instalação no MacOS](#instalação-no-macos)
-  - [Instalação no Windows](#instalação-no-windows-1)
-    - [Instalação no Windows via Chocolatey](#instalação-no-windows-via-chocolatey)
-  - [Criando um cluster com o Kind](#criando-um-cluster-com-o-kind)
-    - [Criando um cluster com múltiplos nós locais com o Kind](#criando-um-cluster-com-múltiplos-nós-locais-com-o-kind)
-- [k3s](#k3s)
-- [Instalação em cluster com três nós](#instalação-em-cluster-com-três-nós)
-  - [Requisitos básicos](#requisitos-básicos-2)
-  - [Configuração de módulos de kernel](#configuração-de-módulos-de-kernel)
-  - [Atualização da distribuição](#atualização-da-distribuição)
-  - [Instalação do Docker e do Kubernetes](#instalação-do-docker-e-do-kubernetes)
-  - [Inicialização do cluster](#inicialização-do-cluster)
-  - [Configuração do arquivo de contextos do kubectl](#configuração-do-arquivo-de-contextos-do-kubectl)
-  - [Inserindo os nós workers no cluster](#inserindo-os-nós-workers-no-cluster)
-    - [Múltiplas Interfaces](#múltiplas-interfaces)
-  - [Instalação do pod network](#instalação-do-pod-network)
-  - [Verificando a instalação](#verificando-a-instalação)
-- [Primeiros passos no k8s](#primeiros-passos-no-k8s)
-  - [Exibindo informações detalhadas sobre os nós](#exibindo-informações-detalhadas-sobre-os-nós)
-  - [Exibindo novamente token para entrar no cluster](#exibindo-novamente-token-para-entrar-no-cluster)
-  - [Ativando o autocomplete](#ativando-o-autocomplete)
-  - [Verificando os namespaces e pods](#verificando-os-namespaces-e-pods)
-  - [Executando nosso primeiro pod no k8s](#executando-nosso-primeiro-pod-no-k8s)
-  - [Verificar os últimos eventos do cluster](#verificar-os-últimos-eventos-do-cluster)
-  - [Efetuar o dump de um objeto em formato YAML](#efetuar-o-dump-de-um-objeto-em-formato-yaml)
-  - [Socorro, são muitas opções!](#socorro-são-muitas-opções)
-  - [Expondo o pod](#expondo-o-pod)
-  - [Limpando tudo e indo para casa](#limpando-tudo-e-indo-para-casa)
+- [Componentes do K8s](#componentes-do-k8s)
+- [Principais Comandos](#principais-comandos)
+- [Container Network Interface](#container-network-interface)
+- [Services](#services)
+  - [Criando um service ClusterIP](#criando-um-service-clusterip)
+  - [Criando um service NodePort](#criando-um-service-nodeport)
+  - [Criando um service LoadBalancer](#criando-um-service-loadbalancer)
+  - [EndPoint](#endpoint)
+- [Limitando Recursos](#limitando-recursos)
+- [Namespaces](#namespaces)
+- [Kubectl taint](#kubectl-taint)
+- [Colocando o nó em modo de manutenção](#colocando-o-nó-em-modo-de-manutenção)
 
 <!-- TOC -->
 
-# O quê preciso saber antes de começar?
+# Componentes do K8s
 
-## Qual distro GNU/Linux devo usar?
+**O k8s tem os seguintes componentes principais:**
 
-Devido ao fato de algumas ferramentas importantes, como o ``systemd`` e ``journald``, terem se tornado padrão na maioria das principais distribuições disponíveis hoje, você não deve encontrar problemas para seguir o treinamento, caso você opte por uma delas, como Ubuntu, Debian, CentOS e afins.
+* Master node
+* Worker node
+* Services
+* Controllers
+* Pods
+* Namespaces e quotas
+* Network e policies
+* Storage
 
-## Alguns sites que devemos visitar
+**[kube-apiserver](https://kubernetes.io/docs/concepts/overview/components/#kube-apiserver)** é a central de operações do cluster k8s. Todas as chamadas, internas ou externas são tratadas por ele. Ele é o único que conecta no ETCD.
 
-- [https://kubernetes.io](https://kubernetes.io)
+**[kube-scheduller](https://kubernetes.io/docs/concepts/overview/components/#kube-apiserver)** usa um algoritmo para verificar em qual node o pod deverá ser hospedado. Ele verifica os recursos disponíveis do node para verificar qual o melhor node para receber aquele pod.
 
-- [https://github.com/kubernetes/kubernetes/](https://github.com/kubernetes/kubernetes/)
+No **[ETCD](https://kubernetes.io/docs/concepts/overview/components/#etcd)** são armazenados o estado do cluster, rede e outras informações persistentes.
 
-- [https://12factor.net/pt_br/](https://12factor.net/pt_br/)
+**[kube-controller-manager](https://kubernetes.io/docs/concepts/overview/components/#cloud-controller-manager)** é o controle principal que interage com o ``kube-apiserver`` para determinar o seu estado. Se o estado não bate, o manager irá contactar o controller necessário para checar seu estado desejado. Tem diversos controllers em uso como: os endpoints, namespace e replication.
 
-## E o k8s?
+O **[kubelet](https://kubernetes.io/docs/concepts/overview/components/#kubelet)** interage com o Docker instalado no node e garante que os contêineres que precisavam estar em execução realmente estão.
 
-**Versão resumida:**
+O **[kube-proxy](https://kubernetes.io/docs/concepts/overview/components/#kube-proxy)** é o responsável por gerenciar a rede para os contêineres, é o responsável por expor portas dos mesmos.
 
-O projeto Kubernetes foi desenvolvido pela Google, em meados de 2014, para atuar como um orquestrador de contêineres para a empresa. O Kubernetes (k8s), cujo termo em Grego significa "timoneiro", é um projeto *opensource* que conta com *design* e desenvolvimento baseados no projeto Borg, que também é da Google [1](https://kubernetes.io/blog/2015/04/borg-predecessor-to-kubernetes/). Alguns outros produtos disponíveis no mercado, tais como o Apache Mesos e o Cloud Foundry, também surgiram a partir do projeto Borg.
+**[Supervisord](http://supervisord.org/)** é o responsável por monitorar e restabelecer, se necessário, o ``kubelet`` e o Docker. Por esse motivo, quando existe algum problema em relação ao kubelet, como por exemplo o uso do driver ``cgroup`` diferente do que está rodando no Docker, você perceberá que ele ficará tentando subir o kubelet frequentemente.
 
-Como Kubernetes é uma palavra difícil de se pronunciar - e de se escrever - a comunidade simplesmente o apelidou de **k8s**, seguindo o padrão [i18n](http://www.i18nguy.com/origini18n.html) (a letra "k" seguida por oito letras e o "s" no final), pronunciando-se simplesmente "kates".
+**[Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/)** é a menor unidade que você irá tratar no k8s. Você poderá ter mais de um contêiner por Pod, porém vale lembrar que eles dividirão os mesmos recursos, como por exemplo IP. Uma das boas razões para se ter mais de um contêiner em um Pod é o fato de você ter os logs consolidados.
 
-## Arquitetura do k8s
+O Pod, por poder possuir diversos contêineres, muitas das vezes se assemelha a uma VM, onde você poderia ter diversos serviços rodando compartilhando o mesmo IP e demais recursos.
 
-Assim como os demais orquestradores disponíveis, o k8s também segue um modelo *master/worker*, constituindo assim um *cluster*, onde para seu funcionamento devem existir no mínimo três nós: o nó *master*, responsável (por padrão) pelo gerenciamento do *cluster*, e os demais como *workers*, executores das aplicações que queremos executar sobre esse *cluster*.
+**[Services](https://kubernetes.io/docs/concepts/services-networking/service/)** é uma forma de você expor a comunicação através de um **NodePort** ou **LoadBalancer** para distribuir as requisições entre diversos Pods daquele Deployment. Funciona como um balanceador de carga.
 
-Embora exista a exigência de no mínimo três nós para a execução do k8s em um ambiente padrão, existem soluções para se executar o k8s em um único nó. Alguns exemplos são:
+# Principais Comandos
 
-* [Kind](https://kind.sigs.k8s.io/docs/user/quick-start): Uma ferramenta para execução de contêineres Docker que simulam o funcionamento de um cluster Kubernetes. É utilizado para fins didáticos, de desenvolvimento e testes. O **Kind não deve ser utilizado para produção**;
+A figura a seguir mostra a estrutura dos principais comandos do ``kubectl``.
 
-* [Minikube](https://github.com/kubernetes/minikube): ferramenta para implementar um *cluster* Kubernetes localmente com apenas um nó. Muito utilizado para fins didáticos, de desenvolvimento e testes. O **Minikube não deve ser utilizado para produção**;
-
-* [MicroK8S](https://microk8s.io): Desenvolvido pela [Canonical](https://canonical.com), mesma empresa que desenvolve o [Ubuntu](https://ubuntu.com). Pode ser utilizado em diversas distribuições e **pode ser utilizada para ambientes de produção**, em especial para *Edge Computing* e IoT (*Internet of things*);
-
-* [k3s](https://k3s.io): Desenvolvido pela [Rancher Labs](https://rancher.com), é um concorrente direto do MicroK8s, podendo ser executado inclusive em Raspberry Pi.
-
-A figura a seguir mostra a arquitetura interna de componentes do k8s.
-
-| ![Arquitetura Kubernetes](../images/kubernetes_architecture.png) |
+| ![Principais Comandos](../images/kubernetes_commands.png) |
 |:---------------------------------------------------------------------------------------------:|
-| *Arquitetura Kubernetes [Ref: phoenixnap.com KB article](https://phoenixnap.com/kb/understanding-kubernetes-architecture-diagrams)*                                                                      |
+| *Principais comandos [Ref: uploaddeimagens.com.br](https://uploaddeimagens.com.br/images/002/667/919/full/Kubernetes-Comandos.png)*                                                                      |
 
-* **API Server**: É um dos principais componentes do k8s. Este componente fornece uma API que utiliza JSON sobre HTTP para comunicação, onde para isto é utilizado principalmente o utilitário ``kubectl``, por parte dos administradores, para a comunicação com os demais nós, como mostrado no gráfico. Estas comunicações entre componentes são estabelecidas através de requisições [REST](https://restfulapi.net);
+# Container Network Interface
 
-* **etcd**: O etcd é um *datastore* chave-valor distribuído que o k8s utiliza para armazenar as especificações, status e configurações do *cluster*. Todos os dados armazenados dentro do etcd são manipulados apenas através da API. Por questões de segurança, o etcd é por padrão executado apenas em nós classificados como *master* no *cluster* k8s, mas também podem ser executados em *clusters* externos, específicos para o etcd, por exemplo;
+Para prover a rede para os contêineres, o k8s utiliza a especificação do **CNI**, Container Network Interface.
 
-* **Scheduler**: O *scheduler* é responsável por selecionar o nó que irá hospedar um determinado *pod* (a menor unidade de um *cluster* k8s - não se preocupe sobre isso por enquanto, nós falaremos mais sobre isso mais tarde) para ser executado. Esta seleção é feita baseando-se na quantidade de recursos disponíveis em cada nó, como também no estado de cada um dos nós do *cluster*, garantindo assim que os recursos sejam bem distribuídos. Além disso, a seleção dos nós, na qual um ou mais pods serão executados, também pode levar em consideração políticas definidas pelo usuário, tais como afinidade, localização dos dados a serem lidos pelas aplicações, etc;
+CNI é uma especificação que reúne algumas bibliotecas para o desenvolvimento de plugins para configuração e gerenciamento de redes para os contêineres. Ele provê uma interface comum entre as diversas soluções de rede para o k8s. Você encontra diversos plugins para AWS, GCP, Cloud Foundry entre outros.
 
-* **Controller Manager**: É o *controller manager* quem garante que o *cluster* esteja no último estado definido no etcd. Por exemplo: se no etcd um *deploy* está configurado para possuir dez réplicas de um *pod*, é o *controller manager* quem irá verificar se o estado atual do *cluster* corresponde a este estado e, em caso negativo, procurará conciliar ambos;
+Mais informações em: [https://github.com/containernetworking/cni](https://github.com/containernetworking/cni)
 
-* **Kubelet**: O *kubelet* pode ser visto como o agente do k8s que é executado nos nós workers. Em cada nó worker deverá existir um agente Kubelet em execução. O Kubelet é responsável por de fato gerenciar os *pods*, que foram direcionados pelo *controller* do *cluster*, dentro dos nós, de forma que para isto o Kubelet pode iniciar, parar e manter os contêineres e os pods em funcionamento de acordo com o instruído pelo controlador do cluster;
+Enquanto o CNI define a rede dos pods, ele não te ajuda na comunicação entre os pods de diferentes nodes.
 
-* **Kube-proxy**: Age como um *proxy* e um *load balancer*. Este componente é responsável por efetuar roteamento de requisições para os *pods* corretos, como também por cuidar da parte de rede do nó;
+As características básicas da rede do k8s são:
 
-* **Container Runtime**: O *container runtime* é o ambiente de execução de contêineres necessário para o funcionamento do k8s. Em 2016 suporte ao [rkt](https://coreos.com/rkt/) foi adicionado, porém desde o início o Docker já é funcional e utilizado por padrão.
+* Todos os pods conseguem se comunicar entre eles em diferentes nodes;
+* Todos os nodes podem se comunicar com todos os pods;
+* Não utilizar NAT.
 
-## Portas que devemos nos preocupar
+Todos os IPs dos pods e nodes são roteados sem a utilização de [NAT](https://en.wikipedia.org/wiki/Network_address_translation). Isso é solucionado com a utilização de algum software que te ajudará na criação de uma rede Overlay. Seguem alguns:
 
-**MASTER**
+* [Weave](https://www.weave.works/docs/net/latest/kube-addon/)
+* [Flannel](https://github.com/coreos/flannel/blob/master/Documentation/kubernetes.md)
+* [Canal](https://github.com/tigera/canal/tree/master/k8s-install)
+* [Calico](https://docs.projectcalico.org/latest/introduction/)
+* [Romana](http://romana.io/)
+* [Nuage](https://github.com/nuagenetworks/nuage-kubernetes/blob/v5.1.1-1/docs/kubernetes-1-installation.rst)
+* [Contiv](http://contiv.github.io/)
 
-Protocol|Direction|Port Range|Purpose|Used By
---------|---------|----------|-------|-------
-TCP|Inbound|6443*|Kubernetes API server|All
-TCP|Inbound|2379-2380|etcd server client API|kube-apiserver, etcd
-TCP|Inbound|10250|Kubelet API|Self, Control plane
-TCP|Inbound|10251|kube-scheduler|Self
-TCP|Inbound|10252|kube-controller-manager|Self
+Mais informações em: [https://kubernetes.io/docs/concepts/cluster-administration/addons/](https://kubernetes.io/docs/concepts/cluster-administration/addons/)
 
-* Toda porta marcada por * é customizável, você precisa se certificar que a porta alterada também esteja aberta.
+# Services
 
-**WORKERS**
+## Criando um service ClusterIP
 
-Protocol|Direction|Port Range|Purpose|Used By
---------|---------|----------|-------|-------
-TCP|Inbound|10250|Kubelet API|Self, Control plane
-TCP|Inbound|30000-32767|NodePort|Services All
+Vamos criar um pod a partir de um pod template utilizando os seguintes comandos:
 
-Caso você opte pelo [Weave](https://weave.works) como *pod network*, devem ser liberadas também as portas 6783 e 6784 TCP.
-
-## Tá, mas qual tipo de aplicação eu devo rodar sobre o k8s?
-
-O melhor *app* para executar em contêiner, principalmente no k8s, são aplicações que seguem o [The Twelve-Factor App](https://12factor.net/pt_br/).
-
-## Conceitos-chave do k8s
-
-É importante saber que a forma como o k8s gerencia os contêineres é ligeiramente diferente de outros orquestradores, como o Docker Swarm, sobretudo devido ao fato de que ele não trata os contêineres diretamente, mas sim através de *pods*. Vamos conhecer alguns dos principais conceitos que envolvem o k8s a seguir:
-
-- **Pod**: é o menor objeto do k8s. Como dito anteriormente, o k8s não trabalha com os contêineres diretamente, mas organiza-os dentro de *pods*, que são abstrações que dividem os mesmos recursos, como endereços, volumes, ciclos de CPU e memória. Um pod, embora não seja comum, pode possuir vários contêineres;
-
-- **Controller**: é o objeto responsável por interagir com o *API Server* e orquestrar algum outro objeto. Exemplos de objetos desta classe são os *Deployments* e *Replication Controllers*;
-
-- **ReplicaSets**: é um objeto responsável por garantir a quantidade de pods em execução no nó;
-
-- **Deployment**: É um dos principais *controllers* utilizados. O *Deployment*, em conjunto com o *ReplicaSet*, garante que determinado número de réplicas de um pod esteja em execução nos nós workers do cluster. Além disso, o Deployment também é responsável por gerenciar o ciclo de vida das aplicações, onde características associadas a aplicação, tais como imagem, porta, volumes e variáveis de ambiente, podem ser especificados em arquivos do tipo *yaml* ou *json* para posteriormente serem passados como parâmetro para o ``kubectl`` executar o deployment. Esta ação pode ser executada tanto para criação quanto para atualização e remoção do deployment;
-
-- **Jobs e CronJobs**: são objetos responsáveis pelo gerenciamento de jobs isolados ou recorrentes.
-
-# Aviso sobre os comandos
-
-> Atenção!!! Antes de cada comando é apresentado o tipo prompt. Exemplos:
-
-```
-$ comando1
-```
-
-```
-# comando2
-```
-
-> O prompt que inicia com o caractere "$", indica que o comando deve ser executado com um usuário comum do sistema operacional.
->
-> O prompt que inicia com o caractere "#", indica que o comando deve ser executado com o usuário **root**.
->
-> Você não deve copiar/colar o prompt, apenas o comando. :-)
-
-# Minikube
-
-## Requisitos básicos
-
-É importante frisar que o Minikube deve ser instalado localmente, e não em um *cloud provider*. Por isso, as especificações de *hardware* a seguir são referentes à máquina local.
-
-* Processamento: 1 core;
-* Memória: 2 GB;
-* HD: 20 GB.
-
-## Instalação do Minikube no GNU/Linux
-
-Antes de mais nada, verifique se a sua máquina suporta virtualização. No GNU/Linux, isto pode ser realizado com:
-
-```
-grep -E --color 'vmx|svm' /proc/cpuinfo
-```
-
-Caso a saída do comando não seja vazia, o resultado é positivo.
-
-Após isso, vamos instalar o ``kubectl`` com os seguintes comandos.
-
-```
-curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
-
-chmod +x ./kubectl
-
-sudo mv ./kubectl /usr/local/bin/kubectl
-
-kubectl version --client
-```
-
-Há a possibilidade de não utilizar um *hypervisor* para a instalação do Minikube, executando-o ao invés disso sobre o próprio host. Iremos utilizar o Oracle VirtualBox como *hypervisor*, que pode ser encontrado [aqui](https://www.virtualbox.org).
-
-Efetue o download e a instalação do ``Minikube`` utilizando os seguintes comandos.
-
-```
-curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-
-chmod +x ./minikube
-
-sudo mv ./minikube /usr/local/bin/minikube
-
-minikube version
-```
-
-## kubectl: alias e autocomplete
-
-Execute o seguinte comando para configurar o alias e autocomplete para o ``kubectl``.
-
-No Bash:
-
-```bash
-source <(kubectl completion bash) # configura o autocomplete na sua sessão atual (antes, certifique-se de ter instalado o pacote bash-completion).
-
-echo "source <(kubectl completion bash)" >> ~/.bashrc # add autocomplete permanentemente ao seu shell.
-```
-
-## Iniciando, parando e excluindo o Minikube
-
-Quando operando em conjunto com um *hypervisor*, o Minikube cria uma máquina virtual, onde dentro dela estarão todos os componentes do k8s para execução. Para realizar a inicialização desse ambiente, antes de executar o minikube, precisamos setar o VirtualBox como padrão para subir este ambiente, para que isso aconteça execute o comando:
-
-```
-minikube config set driver virtualbox
-```
-
-Caso não queria deixar o VirtualBox como padrão sempre que subir o ambiente novo, você deve digitar o comando ``minikube start --driver=virtualbox``. Mas como já setamos o VirtualBox como padrão para subir o ambiente do minikube, basta executar:
-
-```
-minikube start
-```
-
-Para criar um cluster com multi-node basta executar:
-
-``` 
-minikube start --nodes 2 -p multinode-demo
-```
-
-Caso deseje parar o ambiente:
-
-```
-minikube stop
-```
-
-Para excluir o ambiente:
-
-```
-minikube delete
-```
-
-## Certo, e como eu sei que está tudo funcionando como deveria?
-
-Uma vez iniciado, você deve ter uma saída na tela similar à seguinte:
-
-```
-minikube start
-
-
-🎉  minikube 1.10.0 is available! Download it: https://github.com/kubernetes/minikube/releases/tag/v1.10.0
-💡  To disable this notice, run: 'minikube config set WantUpdateNotification false'
-
-🙄  minikube v1.9.2 on Darwin 10.11
-✨  Using the virtualbox driver based on existing profile
-👍  Starting control plane node m01 in cluster minikube
-🔄  Restarting existing virtualbox VM for "minikube" ...
-🐳  Preparing Kubernetes v1.19.1 on Docker 19.03.8 ...
-🌟  Enabling addons: default-storageclass, storage-provisioner
-🏄  Done! kubectl is now configured to use "minikube"
-```
-
-Você pode então listar os nós que fazem parte do seu *cluster* k8s com o seguinte comando:
-
-```
-kubectl get nodes
-```
-
-A saída será similar ao conteúdo a seguir:
-
-Para um node:
-
-```
-kubectl get nodes
-
-NAME       STATUS   ROLES    AGE   VERSION
-minikube   Ready    master   8d    v1.19.1
-```
-
-Para multi-nodes:
-
-```
-NAME                 STATUS    ROLES     AGE       VERSION
-multinode-demo       Ready     master    5m        v1.19.1
-multinode-demo-m02   Ready     <none>    4m        v1.19.1
-```
-
-Inicialmente, a intenção do Minikube é executar o k8s em apenas um nó, porém a partir da versão 1.10.1 e possível usar a função de multi-node (Experimental).
-
-Caso os comandos anteriores tenham sido executados sem erro, a instalação do Minikube terá sido realizada com sucesso.
-
-## Descobrindo o endereço do Minikube
-
-Como dito anteriormente, o Minikube irá criar uma máquina virtual, assim como o ambiente para a execução do k8s localmente. Ele também irá configurar o ``kubectl`` para comunicar-se com o Minikube. Para saber qual é o endereço IP dessa máquina virtual, pode-se executar:
-
-```
-minikube ip
-```
-
-O endereço apresentado é que deve ser utilizado para comunicação com o k8s.
-
-## Acessando a máquina do Minikube via SSH
-
-Para acessar a máquina virtual criada pelo Minikube, pode-se executar:
-
-```
-minikube ssh
-```
-
-## Dashboard
-
-O Minikube vem com um *dashboard* *web* interessante para que o usuário iniciante observe como funcionam os *workloads* sobre o k8s. Para habilitá-lo, o usuário pode digitar:
-
-```
-minikube dashboard
-```
-
-## Logs
-
-Os *logs* do Minikube podem ser acessados através do seguinte comando.
-
-```
-minikube logs
-```
-
-# Instalação em cluster com três nós
-
-## Requisitos básicos
-
-Como já dito anteriormente, o Minikube é ótimo para desenvolvedores, estudos e testes, mas não tem como propósito a execução em ambiente de produção. Dito isso, a instalação de um *cluster* k8s para o treinamento irá requerer pelo menos três máquinas, físicas ou virtuais, cada qual com no mínimo a seguinte configuração:
-
-- Distribuição: Debian, Ubuntu, CentOS, Red Hat, Fedora, SuSE;
-
-- Processamento: 2 *cores*;
-
-- Memória: 2GB.
-
-## Configuração de módulos de kernel
-
-O k8s requer que certos módulos do kernel GNU/Linux estejam carregados para seu pleno funcionamento, e que esses módulos sejam carregados no momento da inicialização do computador. Para tanto, crie o arquivo ``/etc/modules-load.d/k8s.conf`` com o seguinte conteúdo em todos os seus nós.
-
-```textile
-br_netfilter
-ip_vs
-ip_vs_rr
-ip_vs_sh
-ip_vs_wrr
-nf_conntrack_ipv4
-```
-
-## Atualização da distribuição
-
-Em distribuições Debian e baseadas, como o Ubuntu, execute o comando a seguir, em cada um de seus nós, para executar atualização do sistema.
-
-```
-sudo apt update
-
-sudo apt upgrade -y
-```
-
-Em distribuições Red Hat e baseadas, use o seguinte comando.
-
-```
-sudo yum upgrade -y
-```
-
-## Instalação do Docker e do Kubernetes
-
-A instalação do Docker pode ser realizada com apenas um comando, que deve ser executado nos três nós:
-
-```
-curl -fsSL https://get.docker.com | bash
-```
-
-Para travar a uma versão especifica do docker utilize o seguinte comando:
-
-```
-export VERSION=<versão do docker> && curl -fsSL https://get.docker.com | bash
-```
-
-Embora a maneira anterior seja a mais fácil, não permite o controle de opções. Por esse motivo, a documentação do Kubernetes sugere uma instalação mais controlada seguindo os passos disponíveis em: https://kubernetes.io/docs/setup/production-environment/container-runtimes/
-
-**Caso escolha o método mais fácil**, os próximos comandos são muito importantes, pois garantem que o driver ``Cgroup`` do Docker será configurado para o ``systemd``, que é o gerenciador de serviços padrão utilizado pelo Kubernetes.
-
-Para a família Debian, execute o seguinte comando:
-
-```
-cat > /etc/docker/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
-}
-EOF
-```
-
-Para a família Red Hat, execute o seguinte comando:
-
-```
-cat > /etc/docker/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2",
-  "storage-opts": [
-    "overlay2.override_kernel_check=true"
-  ]
-}
-EOF
-```
-
-Os passos a seguir são iguais para ambas as famílias.
-
-```
-sudo mkdir -p /etc/systemd/system/docker.service.d
-```
-
-Agora basta reiniciar o Docker.
-
-```
-sudo systemctl daemon-reload
-sudo systemctl restart docker
-```
-
-Para finalizar, verifique se o driver ``Cgroup`` foi corretamente definido.
-
-```
-docker info | grep -i cgroup
-```
-
-Se a saída foi ``Cgroup Driver: systemd``, tudo certo!
-
-O próximo passo é efetuar a adição dos repositórios do k8s e efetuar a instalação do ``kubeadm``.
-
-Em distribuições Debian e baseadas, isso pode ser realizado com os comandos a seguir.
-
 ```
-sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
-
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-
-sudo echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list
-
-sudo apt-get update
-
-sudo apt-get install -y kubelet kubeadm kubectl
-```
-
-Já em distribuições Red Hat e baseadas, adicione o repositório do k8s criando o arquivo ``/etc/yum.repos.d/kubernetes.repo`` com o conteúdo a seguir:
-
+kubectl run nginx --image nginx --dry-run=client -o yaml > pod-template.yaml
+kubectl create -f pod-template.yaml
+pod/nginx created
 ```
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-```
 
-Os comandos a seguir desativam o *firewall*, instalam os pacotes do k8s e ativam o serviço do mesmo.
+Expondo o pod do Nginx.
 
 ```
-sudo setenforce 0
-
-sudo systemctl stop firewalld
-
-sudo systemctl disable firewalld
-
-sudo yum install -y kubelet kubeadm kubectl
-
-sudo systemctl enable docker && sudo systemctl start docker
+kubectl expose pod nginx --port=80
 
-sudo systemctl enable kubelet && sudo systemctl start kubelet
+service/nginx exposed
 ```
 
-Ainda em distribuições Red Hat e baseadas, é necessário a configuração de alguns parâmetros extras no kernel por meio do **sysctl**. Estes podem ser setados criando o arquivo ``/etc/sysctl.d/k8s.conf`` com o seguinte conteúdo.
+Obtendo informações do service.
 
 ```
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-```
+kubectl get svc
 
-Em ambas distribuições GNU/Linux também é necessário desativar a memória swap em todos os nós com o comando a seguir.
-
-```
-sudo swapoff -a
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP   25m
+nginx        ClusterIP   10.104.209.243   <none>        80/TCP    7m15s
 ```
-
-Além de comentar a linha referente à mesma no arquivo ```/etc/fstab```.
-
-Após esses procedimentos, é interessante a reinicialização de todos os nós do *cluster*.
-
-## Inicialização do cluster
 
-Antes de inicializarmos o *cluster*, vamos efetuar o *download* das imagens que serão utilizadas, executando o comando a seguir no nó que será o *master*.
+Execute o seguinte comando para visualizar mais detalhes do service ``nginx``.
 
 ```
-sudo kubeadm config images pull
-```
+kubectl describe service nginx
 
-Execute o comando a seguir também apenas no nó *master* para a inicialização do cluster. Caso tudo esteja bem, será apresentada ao término de sua execução o comando que deve ser executado nos demais nós para ingressar no *cluster*.
-
-```
-sudo kubeadm init
+Name:              nginx
+Namespace:         default
+Labels:            run=nginx
+Annotations:       <none>
+Selector:          run=nginx
+Type:              ClusterIP
+IP:                10.104.209.243
+Port:              <unset>  80/TCP
+TargetPort:        80/TCP
+Endpoints:         10.46.0.0:80
+Session Affinity:  None
+Events:            <none>
 ```
 
-A opção _--apiserver-advertise-address_ informa qual o endereço IP em que o servidor de API irá escutar. Caso este parâmetro não seja informado, a interface de rede padrão será usada. Opcionalmente, você também pode passar o cidr com a opção _--pod-network-cidr_. O comando obedecerá a seguinte sintaxe:
+Acessando o Ningx. Altere o IP do cluster no comando a seguir de acordo com o seu ambiente.
 
 ```
-kubeadm init --apiserver-advertise-address 192.168.99.2 --pod-network-cidr 192.168.99.0/24
-```
+curl 10.104.209.243
 
-A saída do comando será algo similar ao mostrado a seguir.
-
-```
-    [WARNING SystemVerification]: docker version is greater than the most recently validated version. Docker version: 18.05.0-ce. Max validated version: 17.03
 ...
-To start using your cluster, you need to run the following as a regular user:
-
-  mkdir -p $HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-  sudo chown $(id -u):$(id -g) $HOME/.kube/config
-...
-kubeadm join --token 39c341.a3bc3c4dd49758d5 IP_DO_MASTER:6443 --discovery-token-ca-cert-hash sha256:37092
+<title>Welcome to nginx!</title>
 ...
 ```
 
-Caso o servidor possua mais de uma interface de rede, você pode verificar se o IP interno do nó do seu cluster corresponde ao IP da interface esperada com o seguinte comando:
+Acesse o log do Nginx.
 
 ```
-kubectl describe node elliot-1 | grep InternalIP
+kubectl logs -f nginx
+
+10.40.0.0 - - [10/May/2020:17:31:56 +0000] "GET / HTTP/1.1" 200 612 "-" "curl/7.58.0" "-"
 ```
 
-A saída será algo similar a seguir:
+Remova o serviço criado anteriormente.
 
 ```
-InternalIP:  192.168.99.2
+kubectl delete svc nginx
+
+service "nginx" deleted
 ```
 
-Caso o Ip não corresponda ao da interface de rede escolhida, você pode ir até o arquivo localizado em _/etc/systemd/system/kubelet.service.d/10-kubeadm.conf_ com o editor da sua preferência, procurar por _KUBELET_CONFIG_ARGS_ e adicionar no final a instrução --node-ip=<IP Da sua preferência>. O trecho alterado será semelhante abaixo:
+Agora vamos criar nosso service ``ClusterIP``, porém vamos criar um arquivo yaml com suas definições:
 
 ```
-Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml --node-ip=192.168.99.2"
+vim primeiro-service-clusterip.yaml
 ```
 
-Salve o arquivo e execute os comandos abaixo para reiniciar a configuração e consequentemente o kubelet.
+Informe o seguinte conteúdo:
 
-```
-sudo systemctl daemon-reload
-sudo systemctl restart kubelet
-```
-
-## Configuração do arquivo de contextos do kubectl
-
-Como dito anteriormente e de forma similar ao Docker Swarm, o próprio kubeadm já mostrará os comandos necessários para a configuração do ``kubectl``, para que assim possa ser estabelecida comunicação com o cluster k8s. Para tanto, execute os seguintes comandos.
-
-```
-mkdir -p $HOME/.kube
-
-cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
-
-## Inserindo os nós workers no cluster
-
-Para inserir os nós *workers* no *cluster*, basta executar a linha que começa com ``kubeadm join`` nos mesmos.
-
-### Múltiplas Interfaces
-
-Caso algum dos nós que será utilizado tenha mais de uma interface de rede, verifique se ele consegue alcançar o `service` do `Kubernetes` através da rota padrão.
-
-Para verificar, será necessário pegar o IP interno do `service` Kubernetes através do comando ``kubectl get services kubernetes``. Após obter o IP, basta ir no nó que será ingressado no cluster e rodar o comando ``curl -k https://SERVICE`` alterando o `SERVICE` para o IP do `service`. Exemplo: ``curl -k https://10.96.0.1``.
-
-Caso a saída seja algo parecido com o exemplo a seguir, a conexão está acontecendo normalmente.
-
-```json
-{
-  "kind": "Status",
-  "apiVersion": "v1",
-  "metadata": {
-
-  },
-  "status": "Failure",
-  "message": "forbidden: User \"system:anonymous\" cannot get path \"/\"",
-  "reason": "Forbidden",
-  "details": {
-
-  },
-  "code": 403
-}
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: nginx
+  name: nginx-clusterip
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: nginx
+  type: ClusterIP
 ```
 
-Caso a saída não seja parecido com o exemplo, será necessário adicionar uma rota com o seguinte comando.
-
-```shell
-ip route add REDE_DO_SERVICE/16 dev INTERFACE
-```
-
-Substitua a `REDE_DO SERVICE` com a rede do `service` (geralmente é um IP finalizando com 0).
-
-Exemplo: Se o IP for `10.96.0.1` a rede é `10.96.0.0`) e a `INTERFACE` com a interface do nó que tem acesso ao `master` do cluster.
-
-Exemplo de comando para adicionar uma rota:
+Criando o service:
 
 ```
-sudo ip route add 10.96.0.0/16 dev eth1
+kubectl create -f primeiro-service-clusterip.yaml
+
+service/nginx-clusterip created
 ```
 
-Adicione a rota nas configurações de rede para que seja criada durante o boot.
-
-## Instalação do pod network
-
-Para os usuários do Docker Swarm, há uma diferença entre os dois orquestradores: o k8s por padrão não fornece uma solução de *networking* *out-of-the-box*. Para que isso ocorra, deve ser instalada uma solução de *pod networking* como *add-on*. Existem diversas opções disponíveis, cada qual com funcionalidades diferentes, tais como: [Flannel](https://github.com/coreos/flannel), [Calico](http://docs.projectcalico.org/), [Romana](http://romana.io), [Weave-net](https://www.weave.works/products/weave-net/), entre outros.
-
-Mais informações sobre *pod networking* serão abordados nos demais dias do treinamento.
-
-Caso você ainda não tenha reiniciado os nós que compõem o seu *cluster*, você pode carregar os módulos do kernel necessários com o seguinte comando.
+Obtendo informações do service:
 
 ```
-sudo modprobe br_netfilter ip_vs_rr ip_vs_wrr ip_vs_sh nf_conntrack_ipv4 ip_vs
+kubectl get services
+
+NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+kubernetes        ClusterIP   10.96.0.1       <none>        443/TCP   28m
+nginx-clusterip   ClusterIP   10.109.70.243   <none>        80/TCP    71s
 ```
 
-No curso, nós iremos utilizar o **Weave-net**, que pode ser instalado com o comando a seguir.
+Visualizando os detalhes do service:
 
 ```
-kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+kubectl describe service nginx-clusterip
+
+Name:              nginx-clusterip
+Namespace:         default
+Labels:            run=nginx
+Annotations:       <none>
+Selector:          run=nginx
+Type:              ClusterIP
+IP:                10.109.70.243
+Port:              <unset>  80/TCP
+TargetPort:        80/TCP
+Endpoints:         10.46.0.1:80
+Session Affinity:  None
+Events:            <none>
 ```
 
-Para verificar se o *pod network* foi criado com sucesso, execute o seguinte comando.
+Removendo o service:
 
 ```
-kubectl get pods -n kube-system
+kubectl delete -f primeiro-service-clusterip.yaml
+
+service "nginx-clusterip" deleted
 ```
 
-O resultado deve ser semelhante ao mostrado a seguir.
+Agora vamos mudar um detalhe em nosso manifesto, vamos brincar com o nosso ``sessionAffinity``:
+
+> **Nota:** Se você quiser ter certeza de que as conexões de um cliente específico sejam passadas para o mesmo pod todas as vezes, você pode selecionar a afinidade da sessão (*session affinity*) com base nos endereços IP do cliente, definindo ``service.spec.sessionAffinity`` como ``ClientIP`` (o padrão é ``None``). Você também pode definir o tempo de permanência máximo da sessão definindo ``service.spec.sessionAffinityConfig.clientIP.timeoutSeconds`` adequadamente (o valor padrão é 10800 segundos, o que resulta em 3 horas).
 
 ```
-NAME                                READY   STATUS    RESTARTS   AGE
-coredns-66bff467f8-pfm2c            1/1     Running   0          8d
-coredns-66bff467f8-s8pk4            1/1     Running   0          8d
-etcd-docker-01                      1/1     Running   0          8d
-kube-apiserver-docker-01            1/1     Running   0          8d
-kube-controller-manager-docker-01   1/1     Running   0          8d
-kube-proxy-mdcgf                    1/1     Running   0          8d
-kube-proxy-q9cvf                    1/1     Running   0          8d
-kube-proxy-vf8mq                    1/1     Running   0          8d
-kube-scheduler-docker-01            1/1     Running   0          8d
-weave-net-7dhpf                     2/2     Running   0          8d
-weave-net-fvttp                     2/2     Running   0          8d
-weave-net-xl7km                     2/2     Running   0          8d
+vim primeiro-service-clusterip.yaml
 ```
 
-Pode-se observar que há três contêineres do Weave-net em execução provendo a *pod network* para o nosso *cluster*.
+O conteúdo deve ser o seguinte:
 
-## Verificando a instalação
-
-Para verificar se a instalação está funcionando, e se os nós estão se comunicando, você pode executar o comando ``kubectl get nodes`` no nó master, que deve lhe retornar algo como o conteúdo a seguir.
-
-```
-NAME        STATUS   ROLES    AGE   VERSION
-elliot-01   Ready    master   8d    v1.19.1
-elliot-02   Ready    <none>   8d    v1.19.1
-elliot-03   Ready    <none>   8d    v1.19.1
-```
-
-# Primeiros passos no k8s
-
-## Exibindo informações detalhadas sobre os nós
-
-```
-kubectl describe node [nome_do_no]
-```
-
-Exemplo:
-
-```
-kubectl describe node elliot-02
-
-Name:               elliot-02
-Roles:              <none>
-Labels:             beta.kubernetes.io/arch=amd64
-                    beta.kubernetes.io/os=linux
-                    kubernetes.io/arch=amd64
-                    kubernetes.io/hostname=elliot-02
-                    kubernetes.io/os=linux
-Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
-                    node.alpha.kubernetes.io/ttl: 0
-                    volumes.kubernetes.io/controller-managed-attach-detach: true
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: nginx
+  name: nginx-clusterip
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: nginx
+  sessionAffinity: ClientIP
+  type: ClusterIP
 ```
 
-## Exibindo novamente token para entrar no cluster
-
-Para visualizar novamente o *token* para inserção de novos nós, execute o seguinte comando.
+Criando o service novamente:
 
 ```
-sudo kubeadm token create --print-join-command
+kubectl create -f primeiro-service-clusterip.yaml
+
+service/nginx-clusterip created
 ```
 
-## Ativando o autocomplete
-
-Em distribuições Debian e baseadas, certifique-se que o pacote ``bash-completion`` esteja instalado. Instale-o com o comando a seguir.
+Obtendo informações do service:
 
 ```
-sudo apt install -y bash-completion
+kubectl get services
+
+NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP   29m
+nginx-clusterip   ClusterIP   10.96.44.114   <none>        80/TCP    7s
 ```
 
-Em sistemas Red Hat e baseados, execute:
+Visualizando os detalhes do service:
 
 ```
-sudo yum install -y bash-completion
+kubectl describe service nginx
+
+Name:              nginx-clusterip
+Namespace:         default
+Labels:            run=nginx
+Annotations:       <none>
+Selector:          run=nginx
+Type:              ClusterIP
+IP:                10.96.44.114
+Port:              <unset>  80/TCP
+TargetPort:        80/TCP
+Endpoints:         10.46.0.1:80
+Session Affinity:  ClientIP
+Events:            <none>
 ```
 
-Feito isso, execute o seguinte comando.
+Com isso, agora temos como manter a sessão, ou seja, ele irá manter a conexão com o mesmo pod, respeitando o IP de origem do cliente.
+
+Caso precise, é possível alterar o valor do timeout para o ``sessionAffinity`` (O valor padrão é de 10800 segundos, ou seja 3 horas), apenas adicionando a configuração abaixo.
 
 ```
-kubectl completion bash > /etc/bash_completion.d/kubectl
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10
 ```
 
-Efetue *logoff* e *login* para carregar o *autocomplete*. Caso não deseje, execute:
+Agora podemos remover o service:
 
 ```
-source <(kubectl completion bash)
+kubectl delete -f primeiro-service-clusterip.yaml
+
+service "nginx-clusterip" deleted
 ```
 
-## Verificando os namespaces e pods
+## Criando um service NodePort
 
-O k8s organiza tudo dentro de *namespaces*. Por meio deles, podem ser realizadas limitações de segurança e de recursos dentro do *cluster*, tais como *pods*, *replication controllers* e diversos outros. Para visualizar os *namespaces* disponíveis no *cluster*, digite:
+Execute o comando a seguir para exportar o pod usando o service NodePort. Lembrando que o range de portas internas é entre 30000/TCP a 32767/TCP.
+
+```
+kubectl expose pods nginx --type=NodePort --port=80
+
+service/nginx exposed
+```
+
+Obtendo informações do service:
+
+```
+kubectl get svc
+
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP        29m
+nginx        NodePort    10.101.42.230   <none>        80:31858/TCP   5s
+```
+
+Removendo o service:
+
+```
+kubectl delete svc nginx
+
+service "nginx" deleted
+```
+
+Agora vamos criar um service NodePort, porém vamos criar um manifesto yaml com suas definições.
+
+```
+vim primeiro-service-nodeport.yaml
+```
+
+O conteúdo deve ser o seguinte.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: nginx
+  name: nginx-nodeport
+  namespace: default
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 31111
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: nginx
+  sessionAffinity: None
+  type: NodePort
+```
+
+Criando o service:
+
+```
+kubectl create -f primeiro-service-nodeport.yaml
+
+service/nginx-nodeport created
+```
+
+Obtendo informações do service:
+
+```
+kubectl get services
+
+NAME             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+kubernetes       ClusterIP   10.96.0.1      <none>        443/TCP        30m
+nginx-nodeport   NodePort    10.102.91.81   <none>        80:31111/TCP   7s
+```
+
+Visualizando os detalhes do service:
+
+```
+kubectl describe service nginx
+
+Name:                     nginx-nodeport
+Namespace:                default
+Labels:                   run=nginx
+Annotations:              <none>
+Selector:                 run=nginx
+Type:                     NodePort
+IP:                       10.102.91.81
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  31111/TCP
+Endpoints:                10.46.0.1:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+```
+
+Removendo o service:
+
+```
+kubectl delete -f primeiro-service-nodeport.yaml
+
+service "nginx-nodeport" deleted
+```
+
+## Criando um service LoadBalancer
+
+Execute o comando a seguir para exportar o pod usando o service LoadBalancer.
+
+```
+kubectl expose pod nginx --type=LoadBalancer --port=80
+
+service/nginx exposed
+```
+
+Obtendo informações do service:
+
+```
+kubectl get svc
+
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP      10.96.0.1       <none>        443/TCP        32m
+nginx        LoadBalancer   10.110.198.89   <pending>     80:30728/TCP   4s
+```
+
+Removendo o service:
+
+```
+kubectl delete svc nginx
+
+service "nginx" deleted
+```
+
+Agora vamos criar service LoadBalancer, porém vamos criar um yaml com suas definições.
+
+```
+vim primeiro-service-loadbalancer.yaml
+```
+
+O conteúdo deve ser o seguinte.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: nginx
+  name: nginx-loadbalancer
+  namespace: default
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 31222
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: nginx
+  sessionAffinity: None
+  type: LoadBalancer
+```
+
+Criando o service:
+
+```
+kubectl create -f primeiro-service-loadbalancer.yaml
+
+service/nginx-loadbalancer created
+```
+
+Obtendo informações do service:
+
+```
+kubectl get services
+
+NAME                 TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+kubernetes           ClusterIP      10.96.0.1      <none>        443/TCP        33m
+nginx-loadbalancer   LoadBalancer   10.96.67.165   <pending>     80:31222/TCP   4s
+```
+
+Visualizando informações do service:
+
+```
+kubectl describe service nginx
+
+Name:                     nginx-loadbalancer
+Namespace:                default
+Labels:                   run=nginx
+Annotations:              <none>
+Selector:                 run=nginx
+Type:                     LoadBalancer
+IP:                       10.96.67.165
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  31222/TCP
+Endpoints:                10.46.0.1:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+```
+
+Removendo o service:
+
+```
+kubectl delete -f primeiro-service-loadbalancer.yaml
+
+service "nginx-loadbalancer" deleted
+```
+
+## EndPoint
+
+Sempre que criamos um service, automaticamente é criado um endpoint. O endpoint nada mais é do que o IP do pod que o service irá utilizar, por exemplo, quando criamos um service do tipo ClusterIP temos o seu IP, correto?
+
+Agora, quando batemos nesse IP ele redireciona a conexão para o **Pod** através desse IP, o **EndPoint**.
+
+Para listar os EndPoints criados, execute o comando:
+
+```
+kubectl get endpoints
+
+NAME         ENDPOINTS         AGE
+kubernetes   10.142.0.5:6443   4d
+```
+
+Vamos verificar esse endpoint com mais detalhes.
+
+```
+kubectl describe endpoints kubernetes
+
+Name:         kubernetes
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Subsets:
+  Addresses:          172.31.17.67
+  NotReadyAddresses:  <none>
+  Ports:
+    Name   Port  Protocol
+    ----   ----  --------
+    https  6443  TCP
+
+Events:  <none>
+```
+
+Vamos fazer um exemplo, para isso, vamos realizar a criação de um deployment, aumentar o número de réplicas para 3 e na sequência um service para que possamos ver com mais detalhes os endpoints que serão criados.
+
+```
+kubectl create deployment nginx --image=nginx
+
+deployment.apps/nginx created
+```
+
+Observando os deployments:
+
+```
+kubectl get deployments.apps
+
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   1/1     1            1           5s
+```
+
+Escalando o deployment nginx para 3 réplicas:
+
+```
+kubectl scale deployment nginx --replicas=3
+
+deployment.apps/nginx scaled
+```
+
+Observando os deployments:
+
+```
+kubectl get deployments.apps
+
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   3/3     3            3           1m5s
+```
+
+Expondo o deployment nginx:
+
+```
+kubectl expose deployment nginx --port=80
+
+service/nginx exposed
+```
+
+Visualizando o service:
+
+```
+kubectl get svc
+
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   40m
+nginx        ClusterIP   10.98.153.22   <none>        80/TCP    6s
+```
+
+Acessando o ``nginx``:
+
+```
+curl 10.98.153.22
+
+...
+<h1>Welcome to nginx!</h1>
+...
+```
+
+Visualizando os endpoints:
+
+```
+kubectl get endpoints
+
+NAME         ENDPOINTS                                AGE
+kubernetes   172.31.17.67:6443                        44m
+nginx        10.32.0.2:80,10.32.0.3:80,10.46.0.2:80   3m31s
+```
+
+Visualizando os detalhes do endpoint ``nginx``:
+
+```
+kubectl describe endpoints nginx
+
+Name:         nginx
+Namespace:    default
+Labels:       app=nginx
+Annotations:  endpoints.kubernetes.io/last-change-trigger-time: 2020-05-10T17:47:05Z
+Subsets:
+  Addresses:          10.32.0.2,10.32.0.3,10.46.0.2
+  NotReadyAddresses:  <none>
+  Ports:
+    Name     Port  Protocol
+    ----     ----  --------
+    <unset>  80    TCP
+
+Events:  <none>
+```
+
+Visualizando o endpoint no formato YAML.
+
+```
+kubectl get endpoints -o yaml
+
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Endpoints
+  metadata:
+    creationTimestamp: "2020-05-10T17:06:12Z"
+    managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:subsets: {}
+      manager: kube-apiserver
+      operation: Update
+      time: "2020-05-10T17:06:12Z"
+    name: kubernetes
+    namespace: default
+    resourceVersion: "163"
+    selfLink: /api/v1/namespaces/default/endpoints/kubernetes
+    uid: 39f1e237-f9cc-4553-a32d-95402ff52f6c
+...
+    - ip: 10.46.0.2
+      nodeName: elliot-03
+      targetRef:
+        kind: Pod
+        name: nginx-f89759699-dmt4t
+        namespace: default
+        resourceVersion: "6805"
+        uid: 6a9c4639-78ee-44c6-8eb1-4fd90d308189
+    ports:
+    - port: 80
+      protocol: TCP
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+```
+
+Removendo o deployment ``nginx``:
+
+```
+kubectl delete deployment nginx
+
+deployment.apps "nginx" deleted
+```
+
+Removendo o service:
+
+```
+kubectl delete service nginx
+
+service "nginx" deleted
+```
+
+# Limitando Recursos
+
+Quando criamos um Pod podemos especificar a quantidade de CPU e Memória (RAM) que pode ser consumida em cada contêiner. Quando algum contêiner contém a configuração de limite de recursos o Scheduler fica responsável por alocar esse contêiner no melhor nó possível de acordo com os recursos disponíveis.
+
+Podemos configurar dois tipos de recursos, CPU que é especificada em **unidades de núcleos** e Memória que é especificada em **unidades de bytes**.
+
+Vamos criar nosso primeiro Deployment com limite de recursos, para isso vamos subir a imagem de um ``nginx`` e copiar o ``yaml`` do deployment com o seguinte comando.
+
+```
+kubectl create deployment nginx --image=nginx
+
+deployment.apps/nginx created
+```
+
+Escalando o deployment para 3 réplicas:
+
+```
+kubectl scale deployment nginx --replicas=3
+
+deployment.apps/nginx scaled
+```
+
+Obtendo a lista de deployments:
+
+```
+kubectl get deployments
+
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   3/3     3            3           24s
+```
+
+Crie o seguinte arquivo:
+
+```
+vim deployment-limitado.yaml
+```
+
+O conteúdo deve ser o seguinte.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx
+  name: nginx
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: Always
+        name: nginx
+   # Adicione as seguintes linhas
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+```
+
+> Atenção! **1 core de CPU** corresponde a ``1000m`` (1000 milicore). Ao especificar ``200m``, estamos querendo reservar 20% de 1 core da CPU. Se fosse informado o valor ``0.2`` teria o mesmo efeito, ou seja, seria reservado 20% de 1 core da CPU.
+
+Vamos remover o deployment do ``nginx``:
+
+```
+kubectl delete deployments.apps nginx
+```
+
+Agora vamos criar nosso deployment e verificar os recursos.
+
+```
+kubectl create -f deployment-limitado.yaml
+
+deployment.apps/nginx created
+```
+
+Vamos acessar um contêiner e testar a configuração:
+
+```
+kubectl get pod
+
+NAME                    READY   STATUS    RESTARTS   AGE
+nginx                   1/1     Running   0          12m
+nginx-f89759699-77v8b   1/1     Running   0          117s
+nginx-f89759699-ffbgh   1/1     Running   0          117s
+nginx-f89759699-vzvlt   1/1     Running   0          2m2s
+```
+
+Acessando o shell de um pod:
+
+```
+kubectl exec -ti nginx-f89759699-77v8b -- /bin/bash
+```
+
+Agora no contêiner, instale e execute o ``stress`` para simular a carga em nossos recursos, no caso CPU e memória.
+
+Instalando o comando stress:
+
+```
+apt-get update && apt-get install -y stress
+```
+
+Executando o ``stress``:
+
+```
+stress --vm 1 --vm-bytes 128M --cpu 1
+
+stress: info: [221] dispatching hogs: 1 cpu, 0 io, 1 vm, 0 hdd
+```
+Aqui estamos _stressando_ o contêiner, utilizando 128M de RAM e um core de CPU. Brinque de acordo com os limites que você estabeleceu.
+
+Quando ultrapassar o limite configurado, você receberá um erro como mostrado ao executar o seguinte comando, pois ele não conseguirá alocar os recursos de memória:
+
+```
+stress --vm 1 --vm-bytes 512M --cpu 1
+
+stress: info: [230] dispatching hogs: 1 cpu, 0 io, 1 vm, 0 hdd
+stress: FAIL: [230] (415) <-- worker 232 got signal 9
+stress: WARN: [230] (417) now reaping child worker processes
+stress: FAIL: [230] (451) failed run completed in 0s
+```
+
+Para acompanhar a quantidade de recurso que o pod está utilizando, podemos utilizar o ``kubectl top``. Lembre-se de executar esse comando no node e não no contêiner. :)
+
+```
+kubectl top pod --namespace=default nginx-f89759699-77v8b
+
+NAME                     CPU(cores)   MEMORY(bytes)
+nginx-85f7fb6b45-b6dsk   201m         226Mi
+```
+
+# Namespaces
+
+No kubernetes temos um cara chamado de Namespaces como já vimos anteriormente.
+
+Mas o que é um Namespace? Nada mais é do que um cluster virtual dentro do próprio cluster físico do Kubernetes. Namespaces são uma maneira de dividir recursos de um cluster entre vários ambientes, equipes ou projetos.
+
+Vamos criar nosso primeiro namespaces:
+
+```
+kubectl create namespace primeiro-namespace
+
+namespace/primeiro-namespace created
+```
+
+Vamos listar todos os namespaces do kubernetes:
 
 ```
 kubectl get namespaces
 
-NAME              STATUS   AGE
-default           Active   8d
-kube-node-lease   Active   8d
-kube-public       Active   8d
-kube-system       Active   8d
+NAME                 STATUS   AGE
+default              Active   55m
+kube-node-lease      Active   56m
+kube-public          Active   56m
+kube-system          Active   56m
+primeiro-namespace   Active   5s
 ```
 
-Vamos listar os *pods* do *namespace* **kube-system** utilizando o comando a seguir.
+Pegando mais informações do nosso namespace:
 
 ```
-kubectl get pod -n kube-system
+kubectl describe namespace primeiro-namespace
 
-NAME                                READY   STATUS    RESTARTS   AGE
-coredns-66bff467f8-pfm2c            1/1     Running   0          8d
-coredns-66bff467f8-s8pk4            1/1     Running   0          8d
-etcd-docker-01                      1/1     Running   0          8d
-kube-apiserver-docker-01            1/1     Running   0          8d
-kube-controller-manager-docker-01   1/1     Running   0          8d
-kube-proxy-mdcgf                    1/1     Running   0          8d
-kube-proxy-q9cvf                    1/1     Running   0          8d
-kube-proxy-vf8mq                    1/1     Running   0          8d
-kube-scheduler-docker-01            1/1     Running   0          8d
-weave-net-7dhpf                     2/2     Running   0          8d
-weave-net-fvttp                     2/2     Running   0          8d
-weave-net-xl7km                     2/2     Running   0          8d
-```
-
-Será que há algum *pod* escondido em algum *namespace*? É possível listar todos os *pods* de todos os *namespaces* com o comando a seguir.
-
-```
-kubectl get pods --all-namespaces
-```
-
-Há a possibilidade ainda, de utilizar o comando com a opção ```-o wide```, que disponibiliza maiores informações sobre o recurso, inclusive em qual nó o *pod* está sendo executado. Exemplo:
-
-```
-kubectl get pods --all-namespaces -o wide
-
-NAMESPACE     NAME                                READY   STATUS    RESTARTS   AGE   IP             NODE        NOMINATED NODE   READINESS GATES
-default       nginx                               1/1     Running   0          24m   10.44.0.1      docker-02   <none>           <none>
-kube-system   coredns-66bff467f8-pfm2c            1/1     Running   0          8d    10.32.0.3      docker-01   <none>           <none>
-kube-system   coredns-66bff467f8-s8pk4            1/1     Running   0          8d    10.32.0.2      docker-01   <none>           <none>
-kube-system   etcd-docker-01                      1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   kube-apiserver-docker-01            1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   kube-controller-manager-docker-01   1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   kube-proxy-mdcgf                    1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   kube-proxy-q9cvf                    1/1     Running   0          8d    172.16.83.12   docker-03   <none>           <none>
-kube-system   kube-proxy-vf8mq                    1/1     Running   0          8d    172.16.83.13   docker-02   <none>           <none>
-kube-system   kube-scheduler-docker-01            1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   weave-net-7dhpf                     2/2     Running   0          8d    172.16.83.12   docker-03   <none>           <none>
-kube-system   weave-net-fvttp                     2/2     Running   0          8d    172.16.83.13   docker-02   <none>           <none>
-kube-system   weave-net-xl7km                     2/2     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-```
-
-## Executando nosso primeiro pod no k8s
-
-Iremos iniciar o nosso primeiro *pod* no k8s. Para isso, executaremos o comando a seguir.
-
-```
-kubectl run nginx --image nginx
-
-pod/nginx created
-```
-
-Listando os *pods* com ``kubectl get pods``, obteremos a seguinte saída.
-
-```
-NAME    READY   STATUS    RESTARTS   AGE
-nginx   1/1     Running   0          66s
-```
-
-Vamos olhar agora a descrição desse objeto dentro do *cluster*.
-
-```
-kubectl describe pod nginx
-
-Name:         nginx
-Namespace:    default
-Priority:     0
-Node:         docker-02/172.16.83.13
-Start Time:   Tue, 12 May 2020 02:29:38 -0300
-Labels:       run=nginx
+Name:         primeiro-namespace
+Labels:       <none>
 Annotations:  <none>
-Status:       Running
-IP:           10.44.0.1
-IPs:
-  IP:  10.44.0.1
-Containers:
-  nginx:
-    Container ID:   docker://2719e2bc023944ee8f34db538094c96b24764a637574c703e232908b46b12a9f
-    Image:          nginx
-    Image ID:       docker-pullable://nginx@sha256:86ae264c3f4acb99b2dee4d0098c40cb8c46dcf9e1148f05d3a51c4df6758c12
-    Port:           <none>
-    Host Port:      <none>
-    State:          Running
-      Started:      Tue, 12 May 2020 02:29:42 -0300
+Status:       Active
+
+No resource quota.
+
+No LimitRange resource.
 ```
 
-## Verificar os últimos eventos do cluster
+Como podemos ver, nosso namespace ainda está sem configurações, então iremos utilizar o ``LimitRange`` para adicionar limites de recursos.
 
-Você pode verificar quais são os últimos eventos do *cluster* com o comando ``kubectl get events``. Serão mostrados eventos como: o *download* de imagens do Docker Hub (ou de outro *registry* configurado), a criação/remoção de *pods*, etc.
-
-A saída a seguir mostra o resultado da criação do nosso contêiner com Nginx.
+Vamos criar o manifesto do ``LimitRange``:
 
 ```
-LAST SEEN   TYPE     REASON      OBJECT      MESSAGE
-5m34s       Normal   Scheduled   pod/nginx   Successfully assigned default/nginx to docker-02
-5m33s       Normal   Pulling     pod/nginx   Pulling image "nginx"
-5m31s       Normal   Pulled      pod/nginx   Successfully pulled image "nginx"
-5m30s       Normal   Created     pod/nginx   Created container nginx
-5m30s       Normal   Started     pod/nginx   Started container nginx
+vim limitando-recursos.yaml
 ```
 
-No resultado do comando anterior é possível observar que a execução do nginx ocorreu no *namespace* default e que a imagem **nginx** não existia no repositório local e, sendo assim, teve de ser feito download da imagem.
+O conteúdo deve ser o seguinte.
 
-## Efetuar o dump de um objeto em formato YAML
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limitando-recursos
+spec:
+  limits:
+  - default:
+      cpu: 1
+      memory: 100Mi
+    defaultRequest:
+      cpu: 0.5
+      memory: 80Mi
+    type: Container
+```
 
-Assim como quando se está trabalhando com *stacks* no Docker Swarm, normalmente recursos no k8s são declarados em arquivos **YAML** ou **JSON** e depois manipulados através do ``kubectl``.
-
-Para nos poupar o trabalho de escrever o arquivo inteiro, pode-se utilizar como *template* o *dump* de um objeto já existente no k8s, como mostrado a seguir.
+Agora vamos adicionar esse ``LimitRange`` ao Namespace:
 
 ```
-kubectl get pod nginx -o yaml > meu-primeiro.yaml
+kubectl create -f limitando-recursos.yaml -n primeiro-namespace
+
+limitrange/limitando-recursos created
 ```
 
-Será criado um novo arquivo chamado ``meu-primeiro.yaml``, resultante do redirecionamento da saída do comando ``kubectl get pod nginx -o yaml``.
+Listando o ``LimitRange``:
 
-Abrindo o arquivo com ``vim meu-primeiro.yaml`` (você pode utilizar o editor que você preferir), teremos o seguinte conteúdo.
+```
+kubectl get limitranges
+
+No resources found in default namespace.
+```
+
+Opa! Não encontramos não é mesmo? Mas claro, esquecemos de passar nosso namespace na hora de listar:
+
+```
+kubectl get limitrange -n primeiro-namespace
+
+NAME                 CREATED AT
+limitando-recursos   2020-05-10T18:02:51Z
+```
+
+Ou:
+
+```
+kubectl get limitrange --all-namespaces
+
+NAMESPACE            NAME                 CREATED AT
+primeiro-namespace   limitando-recursos   2020-05-10T18:02:51Z
+```
+
+Vamos dar um describe no ``LimitRange``:
+
+```
+kubectl describe limitrange -n primeiro-namespace
+
+Name:       limitando-recursos
+Namespace:  primeiro-namespace
+Type        Resource  Min  Max  Default Request  Default Limit  Max Limit/Request Ratio
+----        --------  ---  ---  ---------------  -------------  -----------------------
+Container   cpu       -    -    500m             1              -
+Container   memory    -    -    80Mi             100Mi          -
+```
+
+Como podemos observar, adicionamos limites de memória e cpu para cada contêiner que subir nesse ``Namespace``, se algum contêiner for criado dentro do ``Namespace`` sem as configurações de ``Limitrange``, o contêiner irá herdar as configurações de limites de recursos do Namespace.
+
+Vamos criar um pod para verificar se o limite se aplicará:
+
+```
+vim pod-limitrange.yaml
+```
+
+O conteúdo deve ser o seguinte.
 
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  creationTimestamp: "2020-05-12T05:29:38Z"
-  labels:
-    run: nginx
-  managedFields:
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:labels:
-          .: {}
-          f:run: {}
-      f:spec:
-        f:containers:
-          k:{"name":"nginx"}:
-            .: {}
-            f:image: {}
-            f:imagePullPolicy: {}
-            f:name: {}
-            f:resources: {}
-            f:terminationMessagePath: {}
-            f:terminationMessagePolicy: {}
-        f:dnsPolicy: {}
-        f:enableServiceLinks: {}
-        f:restartPolicy: {}
-        f:schedulerName: {}
-        f:securityContext: {}
-        f:terminationGracePeriodSeconds: {}
-    manager: kubectl
-    operation: Update
-    time: "2020-05-12T05:29:38Z"
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:status:
-        f:conditions:
-          k:{"type":"ContainersReady"}:
-            .: {}
-            f:lastProbeTime: {}
-            f:lastTransitionTime: {}
-            f:status: {}
-            f:type: {}
-          k:{"type":"Initialized"}:
-            .: {}
-            f:lastProbeTime: {}
-            f:lastTransitionTime: {}
-            f:status: {}
-            f:type: {}
-          k:{"type":"Ready"}:
-            .: {}
-            f:lastProbeTime: {}
-            f:lastTransitionTime: {}
-            f:status: {}
-            f:type: {}
-        f:containerStatuses: {}
-        f:hostIP: {}
-        f:phase: {}
-        f:podIP: {}
-        f:podIPs:
-          .: {}
-          k:{"ip":"10.44.0.1"}:
-            .: {}
-            f:ip: {}
-        f:startTime: {}
-    manager: kubelet
-    operation: Update
-    time: "2020-05-12T05:29:43Z"
-  name: nginx
-  namespace: default
-  resourceVersion: "1673991"
-  selfLink: /api/v1/namespaces/default/pods/nginx
-  uid: 36506f7b-1f3b-4ee8-b063-de3e6d31bea9
+  name: limit-pod
 spec:
   containers:
-  - image: nginx
-    imagePullPolicy: Always
-    name: nginx
-    resources: {}
-    terminationMessagePath: /dev/termination-log
-    terminationMessagePolicy: File
-    volumeMounts:
-    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-      name: default-token-nkz89
-      readOnly: true
-  dnsPolicy: ClusterFirst
-  enableServiceLinks: true
-  nodeName: docker-02
-  priority: 0
-  restartPolicy: Always
-  schedulerName: default-scheduler
-  securityContext: {}
-  serviceAccount: default
-  serviceAccountName: default
-  terminationGracePeriodSeconds: 30
-  tolerations:
-  - effect: NoExecute
-    key: node.kubernetes.io/not-ready
-    operator: Exists
-    tolerationSeconds: 300
-  - effect: NoExecute
-    key: node.kubernetes.io/unreachable
-    operator: Exists
-    tolerationSeconds: 300
-  volumes:
-  - name: default-token-nkz89
-    secret:
-      defaultMode: 420
-      secretName: default-token-nkz89
-status:
-  conditions:
-  - lastProbeTime: null
-    lastTransitionTime: "2020-05-12T05:29:38Z"
-    status: "True"
-    type: Initialized
-  - lastProbeTime: null
-    lastTransitionTime: "2020-05-12T05:29:43Z"
-    status: "True"
-    type: Ready
-  - lastProbeTime: null
-    lastTransitionTime: "2020-05-12T05:29:43Z"
-    status: "True"
-    type: ContainersReady
-  - lastProbeTime: null
-    lastTransitionTime: "2020-05-12T05:29:38Z"
-    status: "True"
-    type: PodScheduled
-  containerStatuses:
-  - containerID: docker://2719e2bc023944ee8f34db538094c96b24764a637574c703e232908b46b12a9f
-    image: nginx:latest
-    imageID: docker-pullable://nginx@sha256:86ae264c3f4acb99b2dee4d0098c40cb8c46dcf9e1148f05d3a51c4df6758c12
-    lastState: {}
-    name: nginx
-    ready: true
-    restartCount: 0
-    started: true
-    state:
-      running:
-        startedAt: "2020-05-12T05:29:42Z"
-  hostIP: 172.16.83.13
-  phase: Running
-  podIP: 10.44.0.1
-  podIPs:
-  - ip: 10.44.0.1
-  qosClass: BestEffort
-  startTime: "2020-05-12T05:29:38Z"
+  - name: meu-container
+    image: nginx
 ```
 
-Observando o arquivo anterior, notamos que este reflete o **estado** do *pod*. Nós desejamos utilizar tal arquivo apenas como um modelo, e sendo assim, podemos apagar as entradas que armazenam dados de estado desse *pod*, como *status* e todas as demais configurações que são específicas dele. O arquivo final ficará com o conteúdo semelhante a este:
+Agora vamos criar um pod fora do namespace default e outro dentro do namespace limitado (primeiro-namespace), e vamos observar os limites de recursos de cada contêiner e como foram aplicados:
 
-```yaml
-  apiVersion: v1
-  kind: Pod
-  metadata:
-    creationTimestamp: null
-    labels:
-      run: nginx
-    name: nginx
-  spec:
-    containers:
-    - image: nginx
-      name: nginx
-      resources: {}
-    dnsPolicy: ClusterFirst
-    restartPolicy: Always
-  status: {}
-```
-
-Vamos agora remover o nosso *pod* com o seguinte comando.
+Criando o pod no namespace ``default``:
 
 ```
-kubectl delete pod nginx
+kubectl create -f pod-limitrange.yaml
+
+pod/limit-pod created
 ```
 
-A saída deve ser algo como:
+Criando o pod no namespace ``primeiro-namespace``:
 
 ```
-pod "nginx" deleted
+kubectl create -f pod-limitrange.yaml -n primeiro-namespace
+
+pod/limit-pod created
 ```
 
-Vamos recriá-lo, agora a partir do nosso arquivo YAML.
+Vamos listar esses pods e na sequência ver mais detalhes :
 
 ```
-kubectl create -f meu-primeiro.yaml
+kubectl get pods --all-namespaces
 
-pod/nginx created
+NAMESPACE            NAME                                      READY   STATUS    RESTARTS   AGE
+default              limit-pod                                 1/1     Running   0          10s
+primeiro-namespace   limit-pod                                 1/1     Running   0          5s
 ```
 
-Observe que não foi necessário informar ao ``kubectl`` qual tipo de recurso seria criado, pois isso já está contido dentro do arquivo.
+Vamos ver mais detalhes do pod no namespace ``default``.
 
-Listando os *pods* disponíveis com o seguinte comando.
+```
+kubectl describe pod limit-pod
+
+Name:         limit-pod
+Namespace:    default
+Priority:     0
+Node:         elliot-02/172.31.19.123
+Start Time:   Sun, 10 May 2020 18:03:52 +0000
+Labels:       <none>
+Annotations:  <none>
+Status:       Running
+IP:           10.32.0.4
+IPs:
+  IP:  10.32.0.4
+Containers:
+  meu-container:
+    Container ID:   docker://19850dc935ffa41b1754cb58ab60ec5bb3616bbbe6a958abe1b2575bd26ee73d
+    Image:          nginx
+...
+```
+
+Vamos ver mais detalhes do pod no namespace ``primeiro-namespace``.
+
+```
+kubectl describe pod limit-pod -n primeiro-namespace
+
+Name:         limit-pod
+Namespace:    primeiro-namespace
+Priority:     0
+Node:         elliot-03/172.31.24.60
+Start Time:   Sun, 10 May 2020 18:03:57 +0000
+Labels:       <none>
+Annotations:  kubernetes.io/limit-ranger:
+                LimitRanger plugin set: cpu, memory request for container meu-container; cpu, memory limit for container meu-container
+Status:       Running
+IP:           10.46.0.3
+IPs:
+  IP:  10.46.0.3
+Containers:
+  meu-container:
+    Container ID:   docker://ad3760837d71955df47263a2031d4238da2e94002ce4a0631475d301faf1ddef
+    Image:          nginx
+...
+    Limits:
+      cpu:     1
+      memory:  100Mi
+    Requests:
+      cpu:        500m
+      memory:     80Mi
+```
+
+Como podemos ver o **Pod** no namespace ``primeiro-namespace`` está com limit de recursos configurados.
+
+# Kubectl taint
+
+O **Taint** nada mais é do que adicionar propriedades ao nó do cluster para impedir que os pods sejam alocados em nós inapropriados.
+
+Por exemplo, todo nó ``master`` do cluster é marcado para não receber pods que não sejam de gerenciamento do cluster.
+
+O nó ``master`` está marcado com o taint ``NoSchedule``, assim o scheduler do Kubernetes não aloca pods no nó master, e procura outros nós no cluster sem essa marca.
+
+Visualizando os nodes do cluster:
+
+```
+kubectl get nodes
+
+NAME           STATUS   ROLES    AGE     VERSION
+elliot-01   Ready    master   7d14h   v1.18.2
+elliot-02   Ready    <none>   7d14h   v1.18.2
+elliot-03   Ready    <none>   7d14h   v1.18.2
+```
+
+Visualizando as labels Taints do node ``master``:
+
+```
+kubectl describe node elliot-01 | grep -i taint
+
+Taints:             node-role.kubernetes.io/master:NoSchedule
+```
+
+**Vamos testar algumas coisas e permitir que o nó master rode outros pods.**
+
+Primeiro vamos rodar 3 réplicas de ``nginx``:
+
+```
+kubectl create deployment nginx --image=nginx
+
+deployment.apps/nginx created
+```
+
+Visualizando os deployments:
+
+```
+kubectl get deployments.apps
+
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   1/1     1            1           5s
+```
+
+Escalando o deployment do nginx para 3 réplicas:
+
+```
+kubectl scale deployment nginx --replicas=3
+
+deployment.apps/nginx scaled
+```
+
+Visualizando novamente os deployments:
+
+```
+kubectl get deployments.apps
+
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   3/3     3            3           1m5s
+```
+
+Visualizando os detalhes dos pods:
+
+```
+kubectl get pods -o wide
+
+NAME                     READY   STATUS    RESTARTS   AGE     IP          NODE               NOMINATED NODE   READINESS GATES
+limit-pod                1/1     Running   0          3m44s   10.32.0.4   elliot-02   <none>           <none>
+nginx                    1/1     Running   0          25m     10.46.0.1   elliot-03    <none>           <none>
+nginx-85f7fb6b45-9bzwc   1/1     Running   0          6m7s    10.32.0.3   elliot-02   <none>           <none>
+nginx-85f7fb6b45-cbmtr   1/1     Running   0          6m7s    10.46.0.2   elliot-03    <none>           <none>
+nginx-85f7fb6b45-rprz5   1/1     Running   0          6m7s    10.32.0.2   elliot-02   <none>           <none>
+```
+
+Vamos adicionar a marca ``NoSchedule`` aos nós worker também para ver como eles se comportam.
+
+Node worker 1:
+
+```
+kubectl taint node elliot-02 key1=value1:NoSchedule
+
+node/elliot-02 tainted
+```
+
+Node worker 2:
+
+```
+kubectl taint node elliot-03 key1=value1:NoSchedule
+
+node/elliot-03 tainted
+```
+
+Visualizando a label Taint no node worker 1:
+
+```
+kubectl describe node elliot-02 | grep -i taint
+
+Taints:             key1=value1:NoSchedule
+```
+
+Visualizando a label Taint no node worker 2:
+
+```
+kubectl describe node elliot-03 | grep -i taint
+
+Taints:             key1=value1:NoSchedule
+```
+
+Agora vamos aumentar a quantidade de réplicas:
+
+```
+kubectl scale deployment nginx --replicas=5
+
+deployment.apps/nginx scaled
+```
+
+Visualizando os detalhes dos pods:
+
+```
+kubectl get pods  -o wide
+
+NAME                     READY   STATUS    RESTARTS   AGE     IP          NODE               NOMINATED NODE   READINESS GATES
+limit-pod                1/1     Running   0          5m23s   10.32.0.4   elliot-02   <none>           <none>
+nginx                    1/1     Running   0          27m     10.46.0.1   elliot-03    <none>           <none>
+nginx-85f7fb6b45-9bzwc   1/1     Running   0          7m46s   10.32.0.3   elliot-02   <none>           <none>
+nginx-85f7fb6b45-cbmtr   1/1     Running   0          7m46s   10.46.0.2   elliot-03    <none>           <none>
+nginx-85f7fb6b45-qnhtl   0/1     Pending   0          18s     <none>      <none>             <none>           <none>
+nginx-85f7fb6b45-qsvpp   0/1     Pending   0          18s     <none>      <none>             <none>           <none>
+nginx-85f7fb6b45-rprz5   1/1     Running   0          7m46s   10.32.0.2   elliot-02   <none>           <none>
+```
+
+Como podemos ver, as nova réplicas ficaram órfãs esperando aparecer um nó com as prioridades adequadas para o Scheduler.
+
+Vamos remover esse Taint dos nossos nós worker:
+
+Removendo o taint do worker 1:
+
+```
+kubectl taint node elliot-02 key1:NoSchedule-
+
+node/elliot-02 untainted
+```
+
+Removendo o taint do worker 2:
+
+```
+kubectl taint node elliot-03 key1:NoSchedule-
+
+node/elliot-03 untainted
+```
+
+Visualizando os detalhes dos pods:
+
+```
+kubectl get pods  -o wide
+
+NAME                     READY   STATUS    RESTARTS   AGE     IP          NODE               NOMINATED NODE   READINESS GATES
+limit-pod                1/1     Running   0          6m17s   10.32.0.4   elliot-02          <none>           <none>
+nginx                    1/1     Running   0          27m     10.46.0.1   elliot-03          <none>           <none>
+nginx-85f7fb6b45-9bzwc   1/1     Running   0          8m40s   10.32.0.3   elliot-02          <none>           <none>
+nginx-85f7fb6b45-cbmtr   1/1     Running   0          8m40s   10.46.0.2   elliot-03          <none>           <none>
+nginx-85f7fb6b45-qnhtl   1/1     Running   0          72s     10.46.0.5   elliot-03          <none>           <none>
+nginx-85f7fb6b45-qsvpp   1/1     Running   0          72s     10.46.0.4   elliot-03          <none>           <none>
+nginx-85f7fb6b45-rprz5   1/1     Running   0          8m40s   10.32.0.2   elliot-02          <none>           <none>
+```
+
+Existem vários tipos de marcas que podemos usar para classificar os nós, vamos testar uma outra chamada ``NoExecute``, que impede o Scheduler de agendar Pods nesses nós.
+
+Adicionando a marca ``NoExecute`` no worker 1:
+
+```
+kubectl taint node elliot-02 key1=value1:NoExecute
+
+node/elliot-02 tainted
+```
+
+Adicionando a marca ``NoExecute`` no worker 2:
+
+```
+kubectl taint node elliot-03 key1=value1:NoExecute
+
+node/elliot-03 tainted
+```
+
+Visualizando os detalhes dos pods:
 
 ```
 kubectl get pods
+
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-85f7fb6b45-87sq5   0/1     Pending   0          20s
+nginx-85f7fb6b45-8q99g   0/1     Pending   0          20s
+nginx-85f7fb6b45-drmzz   0/1     Pending   0          20s
+nginx-85f7fb6b45-hb4dp   0/1     Pending   0          20s
+nginx-85f7fb6b45-l6zln   0/1     Pending   0          20s
 ```
 
-Deve-se obter uma saída similar à esta:
+Como podemos ver todos os Pods estão órfãs. Porque o nó ``master`` tem a marca taint ``NoScheduler`` default do kubernetes e os nós worker tem a marca ``NoExecute``.
+
+Vamos diminuir a quantidade de réplicas para ver o que acontece.
+
+Reduzindo a quantidade de réplicas no worker 1:
 
 ```
-NAME    READY   STATUS    RESTARTS   AGE
-nginx   1/1     Running   0          109s
+kubectl scale deployment nginx --replicas=1
+
+deployment.apps/nginx scaled
 ```
 
-Uma outra forma de criar um arquivo de *template* é através da opção ``--dry-run`` do ``kubectl``, com o funcionamento ligeiramente diferente dependendo do tipo de recurso que será criado. Exemplos:
-
-Para a criação do template de um *pod*:
+Reduzindo a quantidade de réplicas no worker 2:
 
 ```
-kubectl run meu-nginx --image nginx --dry-run=client -o yaml > pod-template.yaml
+kubectl get pods
+
+nginx-85f7fb6b45-drmzz   0/1     Pending   0          43s
 ```
 
-Para a criação do *template* de um *deployment*:
+Vamos remover o taint ``NoExecute`` do nós workers.
+
+Removendo o taint no worker 1:
 
 ```
-kubectl create deployment meu-nginx --image=nginx --dry-run=client -o yaml > deployment-template.yaml
+kubectl taint node elliot-02 key1:NoExecute-
+
+node/elliot-02 untainted
 ```
 
-A vantagem deste método é que não há a necessidade de limpar o arquivo, além de serem apresentadas apenas as opções necessárias do recurso.
-
-## Socorro, são muitas opções!
-
-Calma, nós sabemos. Mas o ``kubectl`` pode lhe auxiliar um pouco em relação a isso. Ele contém a opção ``explain``, que você pode utilizar caso precise de ajuda com alguma opção em específico dos arquivos de recurso. A seguir alguns exemplos de sintaxe.
+Removendo o taint no worker 2:
 
 ```
-kubectl explain [recurso]
+kubectl taint node elliot-03 key1:NoExecute-
 
-kubectl explain [recurso.caminho.para.spec]
-
-kubectl explain [recurso.caminho.para.spec] --recursive
+node/elliot-03 untainted
 ```
 
-Exemplos:
+Visualizando os detalhes dos pods:
 
 ```
-kubectl explain deployment
+kubectl get pods
 
-kubectl explain pod --recursive
-
-kubectl explain deployment.spec.template.spec
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-85f7fb6b45-drmzz   1/1     Running   0          76s
 ```
 
-## Expondo o pod
+Agora temos um nó operando normalmente.
 
-Dispositivos fora do *cluster*, por padrão, não conseguem acessar os *pods* criados, como é comum em outros sistemas de contêineres. Para expor um *pod*, execute o comando a seguir.
+Mas e se nossos workers ficarem indisponíveis, podemos rodar Pods no nó master?
 
-```
-kubectl expose pod nginx
-```
-
-Será apresentada a seguinte mensagem de erro:
+Claro que podemos, vamos configurar nosso nó master para que o Scheduler consiga agenda Pods nele.
 
 ```
-error: couldn't find port via --port flag or introspection
-See 'kubectl expose -h' for help and examples
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+node/elliot-01 untainted
 ```
 
-O erro ocorre devido ao fato do k8s não saber qual é a porta de destino do contêiner que deve ser exposta (no caso, a 80/TCP). Para configurá-la, vamos primeiramente remover o nosso *pod* antigo:
+Visualizando a marca taint no nó master.
 
 ```
-kubectl delete -f meu-primeiro.yaml
+kubectl describe node elliot-01 | grep -i taint
+
+Taints:             <none>
 ```
 
-Abra agora o arquivo ``meu-primeiro.yaml`` e adicione o bloco a seguir.
-
-```yaml
-...
-spec:
-       containers:
-       - image: nginx
-         imagePullPolicy: Always
-         ports:
-         - containerPort: 80
-         name: nginx
-         resources: {}
-...
-```
-
-> Atenção!!! Arquivos YAML utilizam para sua tabulação dois espaços e não *tab*.
-
-Feita a modificação no arquivo, salve-o e crie novamente o *pod* com o comando a seguir.
+Agora vamos aumentar a quantidade de réplicas do nosso pod ``nginx``.
 
 ```
-kubectl create -f meu-primeiro.yaml
+kubectl scale deployment nginx --replicas=4
 
-pod/nginx created
+deployment.apps/nginx scaled
 ```
 
-Liste o pod.
+Visualizando os detalhes dos pods:
 
 ```
-kubectl get pod nginx
+kubectl get pods -o wide
 
-NAME    READY   STATUS    RESTARTS   AGE
-nginx   1/1     Running   0          32s
+NAME                     READY   STATUS    RESTARTS   AGE    IP          NODE               NOMINATED NODE   READINESS GATES
+nginx-85f7fb6b45-2c6dm   1/1     Running   0          9s     10.32.0.2   elliot-02          <none>           <none>
+nginx-85f7fb6b45-4jzcn   1/1     Running   0          9s     10.32.0.3   elliot-02          <none>           <none>
+nginx-85f7fb6b45-drmzz   1/1     Running   0          114s   10.46.0.1   elliot-03          <none>           <none>
+nginx-85f7fb6b45-rstvq   1/1     Running   0          9s     10.46.0.2   elliot-03          <none>           <none>
 ```
 
-O comando a seguir cria um objeto do k8s chamado de *Service*, que é utilizado justamente para expor *pods* para acesso externo.
+Vamos adicionar o Taint ``NoExecute`` nos nós worker para ver o que acontece.
+
+Adicionando o taint no worker 1:
 
 ```
-kubectl expose pod nginx
+kubectl taint node elliot-02 key1=value1:NoExecute
+
+node/elliot-02 tainted
 ```
 
-Podemos listar todos os *services* com o comando a seguir.
+Adicionando o taint no worker 2:
 
 ```
-kubectl get services
+kubectl taint node elliot-03 key1=value1:NoExecute
 
-NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
-kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   8d
-nginx        ClusterIP   10.105.41.192   <none>        80/TCP    2m30s
+node/elliot-03 tainted
 ```
 
-Como é possível observar, há dois *services* no nosso *cluster*: o primeiro é para uso do próprio k8s, enquanto o segundo foi o quê acabamos de criar. Utilizando o ``curl`` contra o endereço IP mostrado na coluna *CLUSTER-IP*, deve nos ser apresentada a tela principal do Nginx.
+Visualizando os detalhes do pods:
 
 ```
-curl 10.105.41.192
+kubectl get pods -o wide
 
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-</style>
-</head>
-<body>
-<h1>Welcome to nginx!</h1>
-<p>If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.</p>
-
-<p>For online documentation and support please refer to
-<a href="http://nginx.org/">nginx.org</a>.<br/>
-Commercial support is available at
-<a href="http://nginx.com/">nginx.com</a>.</p>
-
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
+NAME                     READY   STATUS    RESTARTS   AGE   IP          NODE              NOMINATED NODE   READINESS GATES
+nginx-85f7fb6b45-49knz   1/1     Running   0          14s   10.40.0.5   elliot-01         <none>           <none>
+nginx-85f7fb6b45-4cm9x   1/1     Running   0          14s   10.40.0.4   elliot-01         <none>           <none>
+nginx-85f7fb6b45-kppnd   1/1     Running   0          14s   10.40.0.6   elliot-01         <none>           <none>
+nginx-85f7fb6b45-rjlmj   1/1     Running   0          14s   10.40.0.3   elliot-01         <none>           <none>
 ```
 
-Este *pod* está disponível para acesso a partir de qualquer nó do *cluster*.
-
-## Limpando tudo e indo para casa
-
-Para mostrar todos os recursos recém criados, pode-se utilizar uma das seguintes opções a seguir.
+Removendo o deployment ``nginx``:
 
 ```
-kubectl get all
+kubectl delete deployment nginx
 
-kubectl get pod,service
-
-kubectl get pod,svc
+deployment.extensions "nginx" deleted
 ```
 
-Note que o k8s nos disponibiliza algumas abreviações de seus recursos. Com o tempo você irá se familiar com elas. Para apagar os recursos criados, você pode executar os seguintes comandos.
+O Scheduler alocou tudo no nó ``master``, como podemos ver o Taint pode ser usado para ajustar configurações de qual Pod deve ser alocado em qual nó.
+
+Vamos permitir que nosso Scheduler aloque e execute os Pods em todos os nós:
+
+Removendo o taint ``NoSchedule`` em todos os nós do cluster:
 
 ```
-kubectl delete -f meu-primeiro.yaml
+kubectl taint node --all key1:NoSchedule-
 
-kubectl delete service nginx
+node/elliot-01 untainted
+node/elliot-02 untainted
+node/elliot-03 untainted
 ```
 
-Liste novamente os recursos para ver se os mesmos ainda estão presentes.
+Removendo o taint ``NoExecute`` em todos os nós do cluster:
+
+```
+kubectl taint node --all key1:NoExecute-
+
+node/kube-worker1 untainted
+node/kube-worker2 untainted
+error: taint "key1:NoExecute" not found
+```
+
+Visualizando os taints dos nodes:
+
+```
+kubectl describe node elliot-01 | grep -i taint
+
+Taints:             <none>
+```
+
+# Colocando o nó em modo de manutenção
+
+Para colocar o nó em manutenção iremos utilizar o ``cordon``.
+
+```
+kubectl cordon elliot-02
+
+node/elliot-02 cordoned
+```
+
+Visualizando o node em manutenção.
+
+```
+kubectl get nodes
+
+NAME        STATUS                      ROLES    AGE     VERSION
+elliot-01   Ready                       master   7d14h   v1.18.2
+elliot-02   Ready,SchedulingDisabled    <none>   7d14h   v1.18.2
+elliot-03   Ready                       <none>   7d14h   v1.18.2
+```
+
+Repare que o nó ``elliot-02`` ficou com o status ``Ready,SchedulingDisabled``, agora você pode fazer a manutenção no seu node tranquilamente.
+Para retirar nó de modo de manutenção, iremos utilizar o ``uncordon``.
+
+```
+kubectl uncordon elliot-02
+
+node/elliot-02 uncordoned
+```
+
+Visualizando novamente os nós.
+
+```
+kubectl get nodes
+
+NAME           STATUS   ROLES    AGE     VERSION
+elliot-01   Ready    master   7d14h   v1.18.2
+elliot-02   Ready    <none>   7d14h   v1.18.2
+elliot-03   Ready    <none>   7d14h   v1.18.2
+```
+
+Pronto, agora seu nó não está mais em modo de manutenção.

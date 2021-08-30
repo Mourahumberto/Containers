@@ -44,6 +44,8 @@ exemplo com cidr: https://eksctl.io/examples/reusing-iam-and-vpc/
 ```bash
 aws eks --region us-east-1 update-kubeconfig --name nome-do-cluster
 aws eks --region us-east-1 update-kubeconfig --name k8s-demo
+aws eks --region us-east-1 update-kubeconfig --name simcloud-eks --profile sim
+
 ```
 
 
