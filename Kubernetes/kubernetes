@@ -23,6 +23,10 @@ COMANDOS
 verificando os nós do cluster
 $ kubectl get nodes
 
+verificando os pods do cluster
+$ kubectl get pods
+$ kubectl get pods -o wide
+
 criando um deployment
 $ kubectl create deployment web --image=nginx
 
@@ -201,7 +205,7 @@ $ kubectl rollout history deployment web2 --revision=2
 voltando a versão
 $ kubectl rollout undo daemonset daemon-set-primeiro --to-revision=1
 
-DEBuGS
+DEBUGS
 entrando em um certo pod
 $ kubectl exec -ti gatewayapi-59bfcc846f-ngmkw -- /bin/bash
 
@@ -369,7 +373,13 @@ $ helm install --namespace=monitoring --name=grafana --version=5.5.7 --set=admin
 CRIANDO CHARTS PARA SUAS APIS
 helm create chart my-api
 
+Dentro da raiz da pasta kube-prometheus-stack
+helm install -f values.yaml stack-prometheus ./
 
+salva os charts do repositório
+~/.cache/helm/repository
+
+helm install --dry-run
 INGRESS
 -Nginx Ingress
 o ingress vai está atuando em cima de um service criado e o service atua em cima de um deploy,
