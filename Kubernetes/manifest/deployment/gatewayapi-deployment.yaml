@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # creationTimestamp: null
+  labels:
+    app: gatewayapi
+  name: gatewayapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gatewayapi
+  strategy: {}
+  template:
+    metadata:
+      # creationTimestamp: null
+      labels:
+        app: gatewayapi
+    spec:
+      containers:
+      - image: 138272065686.dkr.ecr.us-east-1.amazonaws.com/core_gatewayapi
+        name: gatewayapi
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "100m"
+          limits:
+            memory: "600Mi"
+            cpu: "300m"
+	lifecycle:
+          preStop:
+            exec:
+              # SIGTERM triggers a quick exit; gracefully terminate instead
+              command: ["/bin/bash", "-c", "pgrep java | xargs kill -15"]
+        env:
+        - name: JAVA_OPTS
+          value: "-Xms128m -Xmx128m -Delastic.apm.service_name=gatewayteste -Delastic.apm.server_url=http://172.31.85.88:8200 -Delastic.apm.secret_token= -Delastic.apm.application_packages=org.example"
+
+        livenessProbe:
+            httpGet:
+              path: /gatewayapi/health/check/
+              port: 9900
+            periodSeconds: 5
+            failureThreshold: 30
+            initialDelaySeconds: 900
+            timeoutSeconds: 1
+status: {}

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: boletoshim
+spec:
+  ports:
+  - port: 9930
+    protocol: TCP
+    targetPort: 9930
+  selector:
+    app: boletoshim

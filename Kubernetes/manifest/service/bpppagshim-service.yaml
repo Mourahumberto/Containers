@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bpppagshim
+spec:
+  ports:
+  - port: 9951
+    protocol: TCP
+    targetPort: 9951
+  selector:
+    app: bpppagshim
