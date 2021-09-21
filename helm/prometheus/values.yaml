@@ -153,13 +153,13 @@ alertmanager:
   ##
   config:
     global:
-      slack_api_url: https://discordapp.com/api/webhooks/000000000000000/X0X0X0XX0X00XX0--X0X0X0X0X0X0-X0X0X0X0X0X0X-XX/slack
+      slack_api_url: https://discordapp.com/api/webhooks/0000000000000000/X0X0X0X0X0X0X0-X0X0X0X0X0X0X-0X0X0X0X0X-XO/slack
       resolve_timeout: 5m
     route:
       group_by: ['alertname']
       group_wait: 1m
       group_interval: 1m
-      repeat_interval: 1h
+      repeat_interval: 12h
       receiver: 'teste'
       routes:
       - match:
@@ -168,7 +168,7 @@ alertmanager:
     receivers:
     - name: 'teste'
       slack_configs:
-        - api_url: https://discordapp.com/api/webhooks/000000000000000/X0X0X0XX0X00XX0--X0X0X0X0X0X0-X0X0X0X0X0X0X-XX/slack
+        # - api_url: https://discordapp.com/api/webhooks/0000000000000000/X0X0X0X0X0X0X0-X0X0X0X0X0X0X-0X0X0X0X0X-XO/slack
           send_resolved: true
           # channel: 'testes-de-monitoramento'
           title: "\n({{ .Status }}): Sim-alerts"
@@ -667,7 +667,7 @@ grafana:
   ##
   defaultDashboardsEnabled: true
 
-  adminPassword: sU@SENHA
+  adminPassword: Minhasenha123@
 
   ingress:
     ## If true, Grafana Ingress will be created
@@ -688,7 +688,7 @@ grafana:
     ## Must be provided if Ingress is enable.
     ##
     hosts:
-      - seu-dominio.com
+      - meu.dominio.com
     # hosts: []
 
     ## Path for grafana ingress
@@ -2052,7 +2052,7 @@ prometheus:
 
     ## External URL at which Prometheus will be reachable.
     ##
-    externalUrl: ""
+    externalUrl: []
 
     ## Define which Nodes the Pods are scheduled on.
     ## ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -2306,7 +2306,21 @@ prometheus:
     ## The scrape configuration example below will find master nodes, provided they have the name .*mst.*, relabel the
     ## port to 2379 and allow etcd scraping provided it is running on all Kubernetes master nodes
     ##
-    additionalScrapeConfigs: []
+    additionalScrapeConfigs:
+    - job_name: 'federate'
+      scrape_interval: 15s
+
+      honor_labels: true
+      metrics_path: '/federate'    
+      params:
+        'match[]':
+          - '{job="prometheus"}'
+          - '{__name__=~"job:.*"}'
+          - '{namespace=~".+"}'
+          # - '{namespace=~"video-ingest"}'
+      static_configs:
+        - targets:
+          - 12.123.12.123:9090
     # - job_name: kube-etcd
     #   kubernetes_sd_configs:
     #     - role: node

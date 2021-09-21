@@ -149,6 +149,28 @@ defaultRules:
 ```yaml
   adminPassword: prom-operator
 ```
+
+- Adição de um prometheus federado.
+Resumo: neste passo o prometheus irá ler o prometheus que está em outro cluster ou nuvem, em seguida irá agregar as métricas.
+### uma imagem aqui
+
+```yaml
+    additionalScrapeConfigs:
+    - job_name: 'federate'
+      scrape_interval: 15s
+
+      honor_labels: true
+      metrics_path: '/federate'    
+      params:
+        'match[]':
+          - '{job="prometheus"}'
+          - '{__name__=~"job:.*"}'
+          - '{namespace=~".+"}' # forma que encontrei pra da match, nas métricas
+      static_configs:
+        - targets:
+          - 11.123.12.123:9090 # ou a porta que esteja disponibilizando no seu prometheus
+```
+
 ## Dependencies
 
 By default this chart installs additional, dependent charts:
