@@ -300,7 +300,9 @@ spec:
               value: {{ default "minio" .Values.storage }}
 ```
 
+
 ```yaml
+#values.yaml
 imageRegistry: "quay.io/deis"
 dockerTag: "latest"
 pullPolicy: "Always"

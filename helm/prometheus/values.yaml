@@ -2272,20 +2272,20 @@ prometheus:
     ## Prometheus StorageSpec for persistent data
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/user-guides/storage.md
     ##
-    storageSpec: {}
-    ## Using PersistentVolumeClaim
-    ##
-    #  volumeClaimTemplate:
-    #    spec:
-    #      storageClassName: gluster
-    #      accessModes: ["ReadWriteOnce"]
-    #      resources:
-    #        requests:
-    #          storage: 50Gi
-    #    selector: {}
+    storageSpec:
+    # Using PersistentVolumeClaim
+    #
+     volumeClaimTemplate:
+       spec:
+         storageClassName: gp2 #aws
+         accessModes: ["ReadWriteOnce"]
+         resources:
+           requests:
+             storage: 150Gi
+      #  selector: {}
 
-    ## Using tmpfs volume
-    ##
+    # Using tmpfs volume
+    #
     #  emptyDir:
     #    medium: Memory
 
