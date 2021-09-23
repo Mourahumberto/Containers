@@ -17,3 +17,10 @@ The application will be accessible at http:127.0.0.1:5000 or if you are using bo
 ## Docker Hub Image
 
 docker push netomoura10/helloflask:1.0
+
+## Rodando a imagem do dockerhub
+
+
+```bash
+$ docker run -d -p 5000:5000 netomoura10/helloflask:1.0
+```
