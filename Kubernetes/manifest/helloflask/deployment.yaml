@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloflask-deployment
+  labels:
+    app: helloflask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helloflask
+  template:
+    metadata:
+      labels:
+        app: helloflask
+    spec:
+      containers:
+        - name: helloflask
+          image: netomoura10/helloflask:1.0
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              memory: "100M"
+              cpu: "100m"
+            limits:
+              memory: "300M"
+              cpu: "200m"
