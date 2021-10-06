@@ -67,6 +67,7 @@ $ helm uninstall [RELEASE_NAME]
   config:
     global:
       slack_api_url: https://discordapp.com/api/webhooks/0000000000000000/X0X0X0X0X0X0X0-X0X0X0X0X0X0X-0X0X0X0X0X-XO/slack
+      victorops_api_key: 123abc123abc-1b2b-1b2b-1b2b-123abc123abc
       resolve_timeout: 5m
     route:
       group_by: ['alertname']
@@ -77,11 +78,28 @@ $ helm uninstall [RELEASE_NAME]
       routes:
       - match:
           severity: critical
+        receiver: 'victorops'
+      - match:
+          severity: critical
         receiver: 'teste'
     receivers:
     - name: 'teste'
       slack_configs:
         - api_url: https://discordapp.com/api/webhooks/0000000000000000/X0X0X0X0X0X0X0-X0X0X0X0X0X0X-0X0X0X0X0X-XO/slack
+          send_resolved: true
+          # channel: 'testes-de-monitoramento'
+          title: "\n({{ .Status }}): Sim-alerts"
+          icon_url: https://avatars3.githubusercontent.com/u/3380462
+          text: "\nsummary: {{ .CommonAnnotations.summary}}\ndescription: {{ .CommonAnnotations.description }}"
+    - name: 'victorops'
+      victorops_configs:
+        - routing_key: prometheus-simcloud
+          send_resolved: true
+          message_type: CRITICAL
+          entity_display_name: '{{ .CommonAnnotations.title }}'
+          state_message: '{{ .CommonAnnotations.description }}'
+      slack_configs:
+        - api_url: https://discordapp.com/api/webhooks/010101010101/X1X1X1X1X1X1X1X--X1X1X1X1X1X1X1X-X1X1X1X1X1X1X1X-sH/slack
           send_resolved: true
           # channel: 'testes-de-monitoramento'
           title: "\n({{ .Status }}): Sim-alerts"
