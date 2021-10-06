@@ -5,7 +5,7 @@ metadata:
   labels:
     app: helloflask
 spec:
-  replicas: 1
+  replicas: 50
   selector:
     matchLabels:
       app: helloflask
@@ -14,6 +14,8 @@ spec:
       labels:
         app: helloflask
     spec:
+      nodeSelector:
+        service: video-ingest
       containers:
         - name: helloflask
           image: netomoura10/helloflask:1.0
@@ -21,7 +23,7 @@ spec:
             - containerPort: 5000
           resources:
             requests:
-              memory: "100M"
+              memory: "200M"
               cpu: "100m"
             limits:
               memory: "300M"

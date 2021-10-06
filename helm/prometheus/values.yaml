@@ -46,7 +46,7 @@ defaultRules:
     kubePrometheusNodeAlerting: true
     kubePrometheusNodeRecording: true
     kubernetesAbsent: true
-    kubernetesApps: true
+    # kubernetesApps: true
     kubernetesResources: true
     kubernetesStorage: true
     kubernetesSystem: true
@@ -153,7 +153,8 @@ alertmanager:
   ##
   config:
     global:
-      slack_api_url: https://discordapp.com/api/webhooks/0000000000000000/X0X0X0X0X0X0X0-X0X0X0X0X0X0X-0X0X0X0X0X-XO/slack
+      slack_api_url: https://discordapp.com/api/webhooks/010101010101/X1X1X1X1X1X1X1X--X1X1X1X1X1X1X1X-X1X1X1X1X1X1X1X-sH/slack
+      victorops_api_key: 123abc123abc-1b2b-1b2b-1b2b-123abc123abc
       resolve_timeout: 5m
     route:
       group_by: ['alertname']
@@ -164,16 +165,34 @@ alertmanager:
       routes:
       - match:
           severity: critical
+        receiver: 'victorops'
+      - match:
+          severity: critical
         receiver: 'teste'
     receivers:
     - name: 'teste'
       slack_configs:
-        # - api_url: https://discordapp.com/api/webhooks/0000000000000000/X0X0X0X0X0X0X0-X0X0X0X0X0X0X-0X0X0X0X0X-XO/slack
+        - api_url: https://discordapp.com/api/webhooks/010101010101/X1X1X1X1X1X1X1X--X1X1X1X1X1X1X1X-X1X1X1X1X1X1X1X-sH/slack
           send_resolved: true
           # channel: 'testes-de-monitoramento'
           title: "\n({{ .Status }}): Sim-alerts"
           icon_url: https://avatars3.githubusercontent.com/u/3380462
           text: "\nsummary: {{ .CommonAnnotations.summary}}\ndescription: {{ .CommonAnnotations.description }}"
+    - name: 'victorops'
+      victorops_configs:
+        - routing_key: prometheus-simcloud
+          send_resolved: true
+          message_type: CRITICAL
+          entity_display_name: '{{ .CommonAnnotations.title }}'
+          state_message: '{{ .CommonAnnotations.description }}'
+      slack_configs:
+        - api_url: https://discordapp.com/api/webhooks/010101010101/X1X1X1X1X1X1X1X--X1X1X1X1X1X1X1X-X1X1X1X1X1X1X1X-sH/slack
+          send_resolved: true
+          # channel: 'testes-de-monitoramento'
+          title: "\n({{ .Status }}): Sim-alerts"
+          icon_url: https://avatars3.githubusercontent.com/u/3380462
+          text: "\nsummary: {{ .CommonAnnotations.summary}}\ndescription: {{ .CommonAnnotations.description }}"
+          
     templates:
     - '/etc/alertmanager/config/*.tmpl'
 
@@ -667,7 +686,7 @@ grafana:
   ##
   defaultDashboardsEnabled: true
 
-  adminPassword: Minhasenha123@
+  adminPassword: SuaSenh@123
 
   ingress:
     ## If true, Grafana Ingress will be created
@@ -688,7 +707,7 @@ grafana:
     ## Must be provided if Ingress is enable.
     ##
     hosts:
-      - meu.dominio.com
+      - grafana.seudomínio.com
     # hosts: []
 
     ## Path for grafana ingress
@@ -2052,7 +2071,7 @@ prometheus:
 
     ## External URL at which Prometheus will be reachable.
     ##
-    externalUrl: []
+    externalUrl: "http://51.79.100.66:30090"
 
     ## Define which Nodes the Pods are scheduled on.
     ## ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -2274,18 +2293,18 @@ prometheus:
     ##
     storageSpec:
     # Using PersistentVolumeClaim
-    #
-     volumeClaimTemplate:
-       spec:
-         storageClassName: gp2 #aws
-         accessModes: ["ReadWriteOnce"]
-         resources:
-           requests:
-             storage: 150Gi
+    
+      volumeClaimTemplate: # Adição de volume persistente para o prometheus
+        spec:
+          storageClassName: gp2
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
       #  selector: {}
 
-    # Using tmpfs volume
-    #
+    ## Using tmpfs volume
+    ##
     #  emptyDir:
     #    medium: Memory
 
@@ -2316,11 +2335,10 @@ prometheus:
         'match[]':
           - '{job="prometheus"}'
           - '{__name__=~"job:.*"}'
-          - '{namespace=~".+"}'
-          # - '{namespace=~"video-ingest"}'
+          - '{namespace=~".+"}' #<verificação de todos os namespaces>
       static_configs:
         - targets:
-          - 12.123.12.123:9090
+          - 01.01.01.01:9090 # <seu.ip + porta.disponibilizada>
     # - job_name: kube-etcd
     #   kubernetes_sd_configs:
     #     - role: node
