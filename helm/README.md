@@ -20,6 +20,7 @@ Explicação completa sobre helm e exemplos para instalação
 1. [Criando uma estrutura chart](#11)
 
 
+# CAP 1
 
 ## Instalação do Helm <div id='01'/>
 
@@ -119,7 +120,9 @@ $ helm create deis-workflow
 helm pull chartrepo/chartname
 ```
 
-# Criando uma estrutura chart <div id='11'/>
+# CAP 2
+
+## Criando uma estrutura chart <div id='11'/>
 
 - chart é organizado com uma coleção de arquivos dentro de diretórios, o nome do diretório é o nome do chart
 
@@ -135,7 +138,7 @@ wordpress/
                       # will generate valid Kubernetes manifest files.
 ```
 
-## 1. chart.yaml
+### 1. chart.yaml
 - arquivo requerido
 
 ```yaml
@@ -181,12 +184,12 @@ annotations:
   example: A list of annotations keyed by name (optional).
 ```
 
-## 2. Chart LICENSE, README and NOTES
+### 2. Chart LICENSE, README and NOTES
 
 o chart pode conter um pequeno texto explicativo dentro de templates/NOTES.txt. e ao final da instalção ele irá mostrar esse texto.
 ou se o usuário der um helm status [releae]
 
-## 3. Dependêncas (caso tenha dependências)
+### 3. Dependêncas (caso tenha dependências)
 
 ```yaml
 dependencies:
@@ -245,7 +248,7 @@ ou passando por linha de comando
 helm install --set tags.front-end=true --set subchart2.enabled=false
 ```
 
-## 4. Templates and Values
+### 4. Templates and Values
 
 - Todos os recursos que serão criados para essa feature está em templates, hpa, ingress, deployments e etc.
 - os valores podem ser passados de dois jeitos: através de values.yal ou com --set
