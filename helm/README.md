@@ -7,42 +7,21 @@ Explicação completa sobre helm e exemplos para instalação
 
 ## Summary
 
-1. [Organization](manuscript/organization.md)
-1. [Acknowledgements](manuscript/acknowledgements.md)
-1. [Introduction](manuscript/introduction.md)
-1. [Why using Docker?](manuscript/why.md)
-1. [What is Docker](manuscript/whatis.md)
-1. [Set up](manuscript/setup.md)
-1. [Commands](manuscript/commands.md)
-1. [Creating images](manuscript/creatingimages.md)
-1. [Dockerhub](manuscript/dockerhub.md)
-1. [Storage](manuscript/storage.md)
-1. [Understanding the Docker Network](manuscript/network.md)
-1. [Using docker on multiple environments](manuscript/machine.md)
-1. [Managing multiple docker containers with Docker compose](manuscript/compose.md)
-1. [Using Docker on Windows or OSX](manuscript/macos_and_windows.md)
-1. [Dockerizing my Application](manuscript/dockerizing_app.md)
-1. [Codebase](manuscript/codebase.md)
-1. [Dependencies](manuscript/dependencies.md)
-1. [Config](manuscript/config.md)
-1. [Serviços de Apoio](manuscript/backingservices.md)
-1. [Build, Release, Run](manuscript/build-release-run.md)
-1. [Processes](manuscript/processes.md)
-1. [Port Binding](manuscript/portbinding.md)
-1. [Concurrency](manuscript/concurrency.md)
-1. [Disposability](manuscript/disposability.md)
-1. [Parity between Dev & Prod](manuscript/parity.md)
-1. [Logs](manuscript/logs.md)
-1. [Admin](manuscript/admin.md)
-1. [Tips](manuscript/tips.md)
-1. [Appendix](manuscript/appendix.md)
-1. [Container or VM?](manuscript/container_vm.md)
-1. [Useful Commands](manuscript/useful_commands.md)
-1. [Can I run GUI on docker?](manuscript/gui_applications.md)
-1. [Do you lint your Dockerfile? You should...](manuscript/linting_dockerfile.md)
+1. [install](#01)
+1. [Adicione um repositório](#02)
+1. [instale um projeto](#03)
+1. [Customizando um Chart](#04)
+1. [Customizando com linha de comando](#05)
+1. [Veridicando Values](#06)
+1. [Helm upgrade e help rollback](#07)
+1. [Helm uninstall](#08)
+1. [Criando o próprio chart](#09)
+1. [Baixando um chart do hub](#10)
+1. [Criando uma estrutura chart](#11)
 
 
-## Instalação do Helm
+
+## Instalação do Helm <div id='01'/>
 
 - From Apt (Debian/Ubuntu)
 ```
@@ -53,7 +32,7 @@ sudo apt-get update
 sudo apt-get install helm
 ```
 
-## Adicione o repositório desejado.
+## Adicione um repositório. <div id='02'/>
 - veja os repositórios no [Atifact Hub](https://artifacthub.io/packages/search?kind=0&sort=relevance&page=1)
 
 ```
@@ -67,13 +46,13 @@ bitnami/aspnet-core              	1.2.3        	3.1.9        	ASP.NET Core is an
 # ... and many more
 ```
 
-## instale o projeto desejado
+## instale um projeto <div id='03'/>
 
 ```
 $ helm install <xpto> bitnami/wordpress
 ```
 
-## Customizando um chart antes de instalar.
+## Customizando um chart antes de instalar. <div id='04'/>
 
 ```
 $ helm show values bitnami/wordpress > values.yaml
@@ -85,7 +64,8 @@ $ helm show values bitnami/wordpress > values.yaml
 helm install -f values.yaml  <stak-xpto> bitnami/wordpress --version 1.0.1
 ```
 
-## Customizando com linha de comando
+## Customizando com linha de comando <div id='05'/>
+
 
 ```
 helm install --set mariadb.auth.username: user1  <stak-xpto> bitnami/mariadb --version 1.0.1
@@ -98,13 +78,13 @@ mariadb:
     username: user1
 ```
 
-## Verificando os valores depois de instalado
+## Verificando os valores depois de instalado <div id='06'/>
 - neste comando já mostra todos os valores que estão inclusive os que foram passados com --set
 ```
 helm get values <chartxpto>
 ```
 
-## helm upgrade e help rollback
+## Helm upgrade e help rollback <div id='07'/>
 - você pode passar vários values e o arquivo não precisa ter o nome de values.yaml, pode ser um nome qualquer.yaml
 
 ```
@@ -116,7 +96,7 @@ $ helm rollback [RELEASE] [REVISION]
 $ helm rollback xpto 2
 ```
 
-## helm uninstall
+## Helm uninstall <div id='08'/>
 
 ```
 helm uninstall xpto
@@ -127,19 +107,19 @@ helm uninstall xpto
 $ helm list
 ```
 
-## Criando nosso próprio chart
+## Criando o próprio chart <div id='09'/>
 
 ```
 $ helm create deis-workflow
 ```
 
-## Baixando um chart do hub
+## Baixando um chart do hub <div id='10'/>
 
 ```
 helm pull chartrepo/chartname
 ```
 
-# Criando uma estrutura chart
+# Criando uma estrutura chart <div id='11'/>
 
 - chart é organizado com uma coleção de arquivos dentro de diretórios, o nome do diretório é o nome do chart
 
