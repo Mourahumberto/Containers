@@ -479,3 +479,9 @@ $ popeye -A
 
 github: https://github.com/derailed/popeye
 
+# TESTES COM BUSYBOX
+
+kubectl run teste --image=busybox:1.28 --rm -it --restart=Never --command -- nslookup google.com
+kubectl run teste --image=busybox:1.28 --rm -it --restart=Never --command -- nc -vzw1 google.com 443
+kubectl run teste --image=busybox:1.28 --rm -it --restart=Never --command -- wget -qO- google.com
+

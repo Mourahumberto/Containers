@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-deployment
+  labels:
+    app: stress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stress
+  template:
+    metadata:
+      labels:
+        app: stress
+    spec:
+      containers:
+        - name: stress
+          image: netomoura10/stress:1.0
+          command: ['/bin/bash']
+          args: ["-c", "stress --cpu 1 --vm 1 --vm-bytes 1G"]
+          # resources:
+          #   requests:
+          #     memory: "200M"
+          #     cpu: "100m"
+          #   limits:
+          #     memory: "300M"
+          #     cpu: "200m"
