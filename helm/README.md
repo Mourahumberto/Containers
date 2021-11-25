@@ -7,22 +7,24 @@ Explicação completa sobre helm e exemplos para instalação
 
 ## Summary
 
-1. [install](#01)
-1. [Adicione um repositório](#02)
-1. [instale um projeto](#03)
-1. [Customizando um Chart](#04)
-1. [Customizando com linha de comando](#05)
-1. [Veridicando Values](#06)
-1. [Helm upgrade e help rollback](#07)
-1. [Helm uninstall](#08)
-1. [Criando o próprio chart](#09)
-1. [Baixando um chart do hub](#10)
-1. [Criando uma estrutura chart](#11)
+- [CAP 1](#CAP-1)
+  - [install](#install-helm)
+  - [Adicione um repositório](#adicione-um-repositório)
+  - [instale um projeto](#instale-um-projeto)
+  - [Customizando um Chart](#Customizando-um-chart-antes-de-instalar)
+  - [Customizando com linha de comando](#customizando-com-linha-de-comando)
+  - [Veridicando Values](#verificando-os-valores-depois-de-instalado)
+  - [Helm upgrade e help rollback](#helm-upgrade-e-help-rollback)
+  - [Helm uninstall](#helm-uninstall)
+  - [Criando o próprio chart](#Criando-o-próprio-chart)
+  - [Baixando um chart do hub](#baixando-chart-do-hub)
+- [CAP 2](#CAP-2)
+  - [Criando uma estrutura chart](#Criando-uma-estrutura-chart)
 
 
 # CAP 1
 
-## Instalação do Helm <div id='01'/>
+## Install helm
 
 - From Apt (Debian/Ubuntu)
 ```
@@ -33,7 +35,7 @@ sudo apt-get update
 sudo apt-get install helm
 ```
 
-## Adicione um repositório. <div id='02'/>
+## Adicione um repositório.
 - veja os repositórios no [Atifact Hub](https://artifacthub.io/packages/search?kind=0&sort=relevance&page=1)
 
 ```
@@ -47,13 +49,13 @@ bitnami/aspnet-core              	1.2.3        	3.1.9        	ASP.NET Core is an
 # ... and many more
 ```
 
-## instale um projeto <div id='03'/>
+## instale um projeto
 
 ```
 $ helm install <xpto> bitnami/wordpress
 ```
 
-## Customizando um chart antes de instalar. <div id='04'/>
+## Customizando um chart antes de instalar.
 
 ```
 $ helm show values bitnami/wordpress > values.yaml
@@ -65,7 +67,7 @@ $ helm show values bitnami/wordpress > values.yaml
 helm install -f values.yaml  <stak-xpto> bitnami/wordpress --version 1.0.1
 ```
 
-## Customizando com linha de comando <div id='05'/>
+## Customizando com linha de comando
 
 
 ```
@@ -79,13 +81,13 @@ mariadb:
     username: user1
 ```
 
-## Verificando os valores depois de instalado <div id='06'/>
+## Verificando os valores depois de instalado
 - neste comando já mostra todos os valores que estão inclusive os que foram passados com --set
 ```
 helm get values <chartxpto>
 ```
 
-## Helm upgrade e help rollback <div id='07'/>
+## Helm upgrade e help rollback
 - você pode passar vários values e o arquivo não precisa ter o nome de values.yaml, pode ser um nome qualquer.yaml
 
 ```
@@ -97,7 +99,7 @@ $ helm rollback [RELEASE] [REVISION]
 $ helm rollback xpto 2
 ```
 
-## Helm uninstall <div id='08'/>
+## Helm uninstall
 
 ```
 helm uninstall xpto
@@ -108,13 +110,13 @@ helm uninstall xpto
 $ helm list
 ```
 
-## Criando o próprio chart <div id='09'/>
+## Criando o próprio chart
 
 ```
 $ helm create deis-workflow
 ```
 
-## Baixando um chart do hub <div id='10'/>
+## Baixando chart do hub
 
 ```
 helm pull chartrepo/chartname
@@ -122,7 +124,7 @@ helm pull chartrepo/chartname
 
 # CAP 2
 
-## Criando uma estrutura chart <div id='11'/>
+## Criando uma estrutura chart
 
 - chart é organizado com uma coleção de arquivos dentro de diretórios, o nome do diretório é o nome do chart
 
