@@ -3,10 +3,8 @@
 ## Sumário
 
 <!-- TOC -->
-- [Descomplicando Kubernetes Day 1](#descomplicando-kubernetes-day-1)
   - [Sumário](#sumário)
 - [O quê preciso saber antes de começar?](#o-quê-preciso-saber-antes-de-começar)
-  - [Qual distro GNU/Linux devo usar?](#qual-distro-gnulinux-devo-usar)
   - [Alguns sites que devemos visitar](#alguns-sites-que-devemos-visitar)
   - [E o k8s?](#e-o-k8s)
   - [Arquitetura do k8s](#arquitetura-do-k8s)
@@ -30,10 +28,6 @@
 <!-- TOC -->
 
 # O quê preciso saber antes de começar?
-
-## Qual distro GNU/Linux devo usar?
-
-Devido ao fato de algumas ferramentas importantes, como o ``systemd`` e ``journald``, terem se tornado padrão na maioria das principais distribuições disponíveis hoje, você não deve encontrar problemas para seguir o treinamento, caso você opte por uma delas, como Ubuntu, Debian, CentOS e afins.
 
 ## Alguns sites que devemos visitar
 

@@ -3,10 +3,6 @@
 ## Sumário
 
 <!-- TOC -->
-
-- [Descomplicando Kubernetes Day 2](#descomplicando-kubernetes-day-2)
-  - [Sumário](#sumário)
-- [Componentes do K8s](#componentes-do-k8s)
 - [Principais Comandos](#principais-comandos)
 - [Container Network Interface](#container-network-interface)
 - [Services](#services)
@@ -20,75 +16,6 @@
 - [Colocando o nó em modo de manutenção](#colocando-o-nó-em-modo-de-manutenção)
 
 <!-- TOC -->
-
-# Componentes do K8s
-
-**O k8s tem os seguintes componentes principais:**
-
-* Master node
-* Worker node
-* Services
-* Controllers
-* Pods
-* Namespaces e quotas
-* Network e policies
-* Storage
-
-**[kube-apiserver](https://kubernetes.io/docs/concepts/overview/components/#kube-apiserver)** é a central de operações do cluster k8s. Todas as chamadas, internas ou externas são tratadas por ele. Ele é o único que conecta no ETCD.
-
-**[kube-scheduller](https://kubernetes.io/docs/concepts/overview/components/#kube-apiserver)** usa um algoritmo para verificar em qual node o pod deverá ser hospedado. Ele verifica os recursos disponíveis do node para verificar qual o melhor node para receber aquele pod.
-
-No **[ETCD](https://kubernetes.io/docs/concepts/overview/components/#etcd)** são armazenados o estado do cluster, rede e outras informações persistentes.
-
-**[kube-controller-manager](https://kubernetes.io/docs/concepts/overview/components/#cloud-controller-manager)** é o controle principal que interage com o ``kube-apiserver`` para determinar o seu estado. Se o estado não bate, o manager irá contactar o controller necessário para checar seu estado desejado. Tem diversos controllers em uso como: os endpoints, namespace e replication.
-
-O **[kubelet](https://kubernetes.io/docs/concepts/overview/components/#kubelet)** interage com o Docker instalado no node e garante que os contêineres que precisavam estar em execução realmente estão.
-
-O **[kube-proxy](https://kubernetes.io/docs/concepts/overview/components/#kube-proxy)** é o responsável por gerenciar a rede para os contêineres, é o responsável por expor portas dos mesmos.
-
-**[Supervisord](http://supervisord.org/)** é o responsável por monitorar e restabelecer, se necessário, o ``kubelet`` e o Docker. Por esse motivo, quando existe algum problema em relação ao kubelet, como por exemplo o uso do driver ``cgroup`` diferente do que está rodando no Docker, você perceberá que ele ficará tentando subir o kubelet frequentemente.
-
-**[Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/)** é a menor unidade que você irá tratar no k8s. Você poderá ter mais de um contêiner por Pod, porém vale lembrar que eles dividirão os mesmos recursos, como por exemplo IP. Uma das boas razões para se ter mais de um contêiner em um Pod é o fato de você ter os logs consolidados.
-
-O Pod, por poder possuir diversos contêineres, muitas das vezes se assemelha a uma VM, onde você poderia ter diversos serviços rodando compartilhando o mesmo IP e demais recursos.
-
-**[Services](https://kubernetes.io/docs/concepts/services-networking/service/)** é uma forma de você expor a comunicação através de um **NodePort** ou **LoadBalancer** para distribuir as requisições entre diversos Pods daquele Deployment. Funciona como um balanceador de carga.
-
-# Principais Comandos
-
-A figura a seguir mostra a estrutura dos principais comandos do ``kubectl``.
-
-| ![Principais Comandos](../images/kubernetes_commands.png) |
-|:---------------------------------------------------------------------------------------------:|
-| *Principais comandos [Ref: uploaddeimagens.com.br](https://uploaddeimagens.com.br/images/002/667/919/full/Kubernetes-Comandos.png)*                                                                      |
-
-# Container Network Interface
-
-Para prover a rede para os contêineres, o k8s utiliza a especificação do **CNI**, Container Network Interface.
-
-CNI é uma especificação que reúne algumas bibliotecas para o desenvolvimento de plugins para configuração e gerenciamento de redes para os contêineres. Ele provê uma interface comum entre as diversas soluções de rede para o k8s. Você encontra diversos plugins para AWS, GCP, Cloud Foundry entre outros.
-
-Mais informações em: [https://github.com/containernetworking/cni](https://github.com/containernetworking/cni)
-
-Enquanto o CNI define a rede dos pods, ele não te ajuda na comunicação entre os pods de diferentes nodes.
-
-As características básicas da rede do k8s são:
-
-* Todos os pods conseguem se comunicar entre eles em diferentes nodes;
-* Todos os nodes podem se comunicar com todos os pods;
-* Não utilizar NAT.
-
-Todos os IPs dos pods e nodes são roteados sem a utilização de [NAT](https://en.wikipedia.org/wiki/Network_address_translation). Isso é solucionado com a utilização de algum software que te ajudará na criação de uma rede Overlay. Seguem alguns:
-
-* [Weave](https://www.weave.works/docs/net/latest/kube-addon/)
-* [Flannel](https://github.com/coreos/flannel/blob/master/Documentation/kubernetes.md)
-* [Canal](https://github.com/tigera/canal/tree/master/k8s-install)
-* [Calico](https://docs.projectcalico.org/latest/introduction/)
-* [Romana](http://romana.io/)
-* [Nuage](https://github.com/nuagenetworks/nuage-kubernetes/blob/v5.1.1-1/docs/kubernetes-1-installation.rst)
-* [Contiv](http://contiv.github.io/)
-
-Mais informações em: [https://kubernetes.io/docs/concepts/cluster-administration/addons/](https://kubernetes.io/docs/concepts/cluster-administration/addons/)
 
 # Services
 

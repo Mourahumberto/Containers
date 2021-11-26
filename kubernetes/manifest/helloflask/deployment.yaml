@@ -5,7 +5,7 @@ metadata:
   labels:
     app: helloflask
 spec:
-  replicas: 50
+  replicas: 1
   selector:
     matchLabels:
       app: helloflask
