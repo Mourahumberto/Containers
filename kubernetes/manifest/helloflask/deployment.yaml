@@ -14,8 +14,8 @@ spec:
       labels:
         app: helloflask
     spec:
-      nodeSelector:
-        service: video-ingest
+      # nodeSelector:
+      #   service: video-ingest
       containers:
         - name: helloflask
           image: netomoura10/helloflask:1.0

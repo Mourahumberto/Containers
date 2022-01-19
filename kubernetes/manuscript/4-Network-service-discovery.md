@@ -66,6 +66,16 @@ curl 10.104.209.243
 <title>Welcome to nginx!</title>
 ...
 ```
+Acessando fazendo port-foward no serviço
+
+```
+kubectl port-foward svc/nginx 9090 -n onamespace
+```
+
+Acessando fazendo port-foward no pod
+```
+kubectl port-foward podname <portlocal>:<port-pod> -n onamespace
+```
 
 Acesse o log do Nginx.
 
