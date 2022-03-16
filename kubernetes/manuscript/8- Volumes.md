@@ -82,3 +82,8 @@ A figura a seguir mostra a arquitetura de PVC, PV e storage class.
 | *Arquitetura Kubernetes Volumes  [Ref: Ashish Patel KB article](https://medium.com/devops-mojo/kubernetes-storage-options-overview-persistent-volumes-pv-claims-pvc-and-storageclass-sc-k8s-storage-df71ca0fccc3)*
 
 ### Exemplos de PVC usando storage class RWO
+https://github.com/Mourahumberto/Containers/blob/main/kubernetes/manifest/site-pvc/site-pvc.yaml
+
+### Exemplos de PVC usando storage class RWX
+- Siga a Doc caso for usar o efs: https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html
+e aplique : https://github.com/Mourahumberto/Containers/blob/main/kubernetes/manifest/site-pvc/site-pvc-efs.yaml
