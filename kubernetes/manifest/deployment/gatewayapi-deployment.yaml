@@ -17,8 +17,10 @@ spec:
       labels:
         app: gatewayapi
     spec:
+      nodeSelector:
+        service: teste
       containers:
-      - image: 138272065686.dkr.ecr.us-east-1.amazonaws.com/core_gatewayapi
+      - image: teste.amazonaws.com/core_gatewayapi
         name: gatewayapi
         resources:
           requests:
