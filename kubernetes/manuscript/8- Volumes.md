@@ -87,3 +87,6 @@ https://github.com/Mourahumberto/Containers/blob/main/kubernetes/manifest/site-p
 ### Exemplos de PVC usando storage class RWX
 - Siga a Doc caso for usar o efs: https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html
 e aplique : https://github.com/Mourahumberto/Containers/blob/main/kubernetes/manifest/site-pvc/site-pvc-efs.yaml
+
+### Usando o rook para criação de shared-storage e NFS
+ Doc : https://rook.io/docs/rook/v1.8/quickstart.html
