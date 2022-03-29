@@ -43,10 +43,16 @@ kind: Ingress
 metadata:
   name: example
   namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
+  tls:
+  - hosts:
+    - site-staging-aws.segware.com.br
+    secretName: site-staging-aws
   ingressClassName: nginx
   rules:
-    - host: <your.dns.com.br>
+    - host: site-staging-aws.segware.com.br
       http:
         paths:
           - backend:
