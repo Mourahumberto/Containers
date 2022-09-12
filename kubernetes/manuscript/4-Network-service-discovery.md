@@ -1,13 +1,3 @@
-## Sumário
-
-<!-- TOC -->
-- [Services](#services) 
-  - [Criando um service ClusterIP](#criando-um-service-clusterip)
-  - [Criando um service NodePort](#criando-um-service-nodeport)
-  - [Criando um service LoadBalancer](#criando-um-service-loadbalancer)
-  - [EndPoint](#endpoint)
-<!-- TOC -->
-
 # Services
 
 ## Criando um service ClusterIP
@@ -69,7 +59,7 @@ curl 10.104.209.243
 Acessando fazendo port-foward no serviço
 
 ```
-kubectl port-foward svc/nginx 9090 -n onamespace
+kubectl port-foward svc/nginx 9090:80 -n onamespace
 ```
 
 Acessando fazendo port-foward no pod
@@ -489,140 +479,6 @@ Subsets:
     https  6443  TCP
 
 Events:  <none>
-```
-
-Vamos fazer um exemplo, para isso, vamos realizar a criação de um deployment, aumentar o número de réplicas para 3 e na sequência um service para que possamos ver com mais detalhes os endpoints que serão criados.
-
-```
-kubectl create deployment nginx --image=nginx
-
-deployment.apps/nginx created
-```
-
-Observando os deployments:
-
-```
-kubectl get deployments.apps
-
-NAME    READY   UP-TO-DATE   AVAILABLE   AGE
-nginx   1/1     1            1           5s
-```
-
-Escalando o deployment nginx para 3 réplicas:
-
-```
-kubectl scale deployment nginx --replicas=3
-
-deployment.apps/nginx scaled
-```
-
-Observando os deployments:
-
-```
-kubectl get deployments.apps
-
-NAME    READY   UP-TO-DATE   AVAILABLE   AGE
-nginx   3/3     3            3           1m5s
-```
-
-Expondo o deployment nginx:
-
-```
-kubectl expose deployment nginx --port=80
-
-service/nginx exposed
-```
-
-Visualizando o service:
-
-```
-kubectl get svc
-
-NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   40m
-nginx        ClusterIP   10.98.153.22   <none>        80/TCP    6s
-```
-
-Acessando o ``nginx``:
-
-```
-curl 10.98.153.22
-
-...
-<h1>Welcome to nginx!</h1>
-...
-```
-
-Visualizando os endpoints:
-
-```
-kubectl get endpoints
-
-NAME         ENDPOINTS                                AGE
-kubernetes   172.31.17.67:6443                        44m
-nginx        10.32.0.2:80,10.32.0.3:80,10.46.0.2:80   3m31s
-```
-
-Visualizando os detalhes do endpoint ``nginx``:
-
-```
-kubectl describe endpoints nginx
-
-Name:         nginx
-Namespace:    default
-Labels:       app=nginx
-Annotations:  endpoints.kubernetes.io/last-change-trigger-time: 2020-05-10T17:47:05Z
-Subsets:
-  Addresses:          10.32.0.2,10.32.0.3,10.46.0.2
-  NotReadyAddresses:  <none>
-  Ports:
-    Name     Port  Protocol
-    ----     ----  --------
-    <unset>  80    TCP
-
-Events:  <none>
-```
-
-Visualizando o endpoint no formato YAML.
-
-```
-kubectl get endpoints -o yaml
-
-apiVersion: v1
-items:
-- apiVersion: v1
-  kind: Endpoints
-  metadata:
-    creationTimestamp: "2020-05-10T17:06:12Z"
-    managedFields:
-    - apiVersion: v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        f:subsets: {}
-      manager: kube-apiserver
-      operation: Update
-      time: "2020-05-10T17:06:12Z"
-    name: kubernetes
-    namespace: default
-    resourceVersion: "163"
-    selfLink: /api/v1/namespaces/default/endpoints/kubernetes
-    uid: 39f1e237-f9cc-4553-a32d-95402ff52f6c
-...
-    - ip: 10.46.0.2
-      nodeName: elliot-03
-      targetRef:
-        kind: Pod
-        name: nginx-f89759699-dmt4t
-        namespace: default
-        resourceVersion: "6805"
-        uid: 6a9c4639-78ee-44c6-8eb1-4fd90d308189
-    ports:
-    - port: 80
-      protocol: TCP
-kind: List
-metadata:
-  resourceVersion: ""
-  selfLink: ""
 ```
 
 Removendo o deployment ``nginx``:

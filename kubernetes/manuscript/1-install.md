@@ -1,34 +1,5 @@
 # Kubernetes
 
-## Sumário
-
-<!-- TOC -->
-- [Descomplicando Kubernetes Day 1](#descomplicando-kubernetes-day-1)
-  - [Sumário](#sumário)
-- [O quê preciso saber antes de começar?](#o-quê-preciso-saber-antes-de-começar)
-  - [Qual distro GNU/Linux devo usar?](#qual-distro-gnulinux-devo-usar)
-  - [Alguns sites que devemos visitar](#alguns-sites-que-devemos-visitar)
-  - [E o k8s?](#e-o-k8s)
-  - [Arquitetura do k8s](#arquitetura-do-k8s)
-  - [Portas que devemos nos preocupar](#portas-que-devemos-nos-preocupar)
-  - [Tá, mas qual tipo de aplicação eu devo rodar sobre o k8s?](#tá-mas-qual-tipo-de-aplicação-eu-devo-rodar-sobre-o-k8s)
-  - [Conceitos-chave do k8s](#conceitos-chave-do-k8s)
-- [Aviso sobre os comandos](#aviso-sobre-os-comandos)
-- [Minikube](#minikube)
-  - [Requisitos básicos](#requisitos-básicos)
-  - [Instalação do Minikube no GNU/Linux](#instalação-do-minikube-no-gnulinux)
-  - [Instalação do Minikube no MacOS](#instalação-do-minikube-no-macos)
-  - [kubectl: alias e autocomplete](#kubectl-alias-e-autocomplete)
-  - [Instalação do Minikube no Microsoft Windows](#instalação-do-minikube-no-microsoft-windows)
-  - [Iniciando, parando e excluindo o Minikube](#iniciando-parando-e-excluindo-o-minikube)
-  - [Certo, e como eu sei que está tudo funcionando como deveria?](#certo-e-como-eu-sei-que-está-tudo-funcionando-como-deveria)
-  - [Descobrindo o endereço do Minikube](#descobrindo-o-endereço-do-minikube)
-  - [Acessando a máquina do Minikube via SSH](#acessando-a-máquina-do-minikube-via-ssh)
-  - [Dashboard](#dashboard)
-  - [Logs](#logs)
-
-<!-- TOC -->
-
 # O quê preciso saber antes de começar?
 
 ## Qual distro GNU/Linux devo usar?

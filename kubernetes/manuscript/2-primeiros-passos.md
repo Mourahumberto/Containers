@@ -1,18 +1,4 @@
-# Sumário
-
-- [Primeiros passos no k8s](#primeiros-passos-no-k8s)
-  - [Exibindo informações detalhadas sobre os nós](#exibindo-informações-detalhadas-sobre-os-nós)
-  - [Exibindo novamente token para entrar no cluster](#exibindo-novamente-token-para-entrar-no-cluster)
-  - [Ativando o autocomplete](#ativando-o-autocomplete)
-  - [Verificando os namespaces e pods](#verificando-os-namespaces-e-pods)
-  - [Executando nosso primeiro pod no k8s](#executando-nosso-primeiro-pod-no-k8s)
-  - [Verificar os últimos eventos do cluster](#verificar-os-últimos-eventos-do-cluster)
-  - [Efetuar o dump de um objeto em formato YAML](#efetuar-o-dump-de-um-objeto-em-formato-yaml)
-  - [Socorro, são muitas opções!](#socorro-são-muitas-opções)
-  - [Expondo o pod](#expondo-o-pod)
-  - [Limpando tudo e indo para casa](#limpando-tudo-e-indo-para-casa)
-  
-# Primeiros passos no k8s
+# Primeiros Passos
 
 ## Exibindo informações detalhadas sobre os nós
 
@@ -45,64 +31,18 @@ Para visualizar novamente o *token* para inserção de novos nós, execute o seg
 sudo kubeadm token create --print-join-command
 ```
 
-## Ativando o autocomplete
-
-Em distribuições Debian e baseadas, certifique-se que o pacote ``bash-completion`` esteja instalado. Instale-o com o comando a seguir.
-
-```
-sudo apt install -y bash-completion
-```
-
-Em sistemas Red Hat e baseados, execute:
-
-```
-sudo yum install -y bash-completion
-```
-
-Feito isso, execute o seguinte comando.
-
-```
-kubectl completion bash > /etc/bash_completion.d/kubectl
-```
-
-Efetue *logoff* e *login* para carregar o *autocomplete*. Caso não deseje, execute:
-
-```
-source <(kubectl completion bash)
-```
-
 ## Verificando os namespaces e pods
 
-O k8s organiza tudo dentro de *namespaces*. Por meio deles, podem ser realizadas limitações de segurança e de recursos dentro do *cluster*, tais como *pods*, *replication controllers* e diversos outros. Para visualizar os *namespaces* disponíveis no *cluster*, digite:
+O k8s organiza quase tudo dentro de *namespaces*. Por meio deles, podem ser realizadas limitações de segurança e de recursos dentro do *cluster*, tais como *pods*, *replication controllers* e diversos outros. Para visualizar os *namespaces* disponíveis no *cluster*, digite:
 
 ```
 kubectl get namespaces
-
-NAME              STATUS   AGE
-default           Active   8d
-kube-node-lease   Active   8d
-kube-public       Active   8d
-kube-system       Active   8d
 ```
 
 Vamos listar os *pods* do *namespace* **kube-system** utilizando o comando a seguir.
 
 ```
 kubectl get pod -n kube-system
-
-NAME                                READY   STATUS    RESTARTS   AGE
-coredns-66bff467f8-pfm2c            1/1     Running   0          8d
-coredns-66bff467f8-s8pk4            1/1     Running   0          8d
-etcd-docker-01                      1/1     Running   0          8d
-kube-apiserver-docker-01            1/1     Running   0          8d
-kube-controller-manager-docker-01   1/1     Running   0          8d
-kube-proxy-mdcgf                    1/1     Running   0          8d
-kube-proxy-q9cvf                    1/1     Running   0          8d
-kube-proxy-vf8mq                    1/1     Running   0          8d
-kube-scheduler-docker-01            1/1     Running   0          8d
-weave-net-7dhpf                     2/2     Running   0          8d
-weave-net-fvttp                     2/2     Running   0          8d
-weave-net-xl7km                     2/2     Running   0          8d
 ```
 
 Será que há algum *pod* escondido em algum *namespace*? É possível listar todos os *pods* de todos os *namespaces* com o comando a seguir.
@@ -118,18 +58,6 @@ kubectl get pods --all-namespaces -o wide
 
 NAMESPACE     NAME                                READY   STATUS    RESTARTS   AGE   IP             NODE        NOMINATED NODE   READINESS GATES
 default       nginx                               1/1     Running   0          24m   10.44.0.1      docker-02   <none>           <none>
-kube-system   coredns-66bff467f8-pfm2c            1/1     Running   0          8d    10.32.0.3      docker-01   <none>           <none>
-kube-system   coredns-66bff467f8-s8pk4            1/1     Running   0          8d    10.32.0.2      docker-01   <none>           <none>
-kube-system   etcd-docker-01                      1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   kube-apiserver-docker-01            1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   kube-controller-manager-docker-01   1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   kube-proxy-mdcgf                    1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   kube-proxy-q9cvf                    1/1     Running   0          8d    172.16.83.12   docker-03   <none>           <none>
-kube-system   kube-proxy-vf8mq                    1/1     Running   0          8d    172.16.83.13   docker-02   <none>           <none>
-kube-system   kube-scheduler-docker-01            1/1     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
-kube-system   weave-net-7dhpf                     2/2     Running   0          8d    172.16.83.12   docker-03   <none>           <none>
-kube-system   weave-net-fvttp                     2/2     Running   0          8d    172.16.83.13   docker-02   <none>           <none>
-kube-system   weave-net-xl7km                     2/2     Running   0          8d    172.16.83.14   docker-01   <none>           <none>
 ```
 
 ## Executando nosso primeiro pod no k8s
