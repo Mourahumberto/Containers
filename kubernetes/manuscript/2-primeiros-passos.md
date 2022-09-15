@@ -22,13 +22,30 @@ Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.
                     node.alpha.kubernetes.io/ttl: 0
                     volumes.kubernetes.io/controller-managed-attach-detach: true
 ```
+## gerenciando objetos no kubernetes
 
-## Exibindo novamente token para entrar no cluster
-
-Para visualizar novamente o *token* para inserção de novos nós, execute o seguinte comando.
-
+### Imperative commands
+- comandos criando recurso direto na API sem nem um manifesto(.yaml) kubernetes
 ```
-sudo kubeadm token create --print-join-command
+kubectl create deployment nginx --image nginx
+```
+
+### Imperative object configuration
+- comandos usado em manifestos para criar objetos no kubernetes
+```
+kubectl create -f nginx.yaml
+kubectl delete -f nginx.yaml -f redis.yaml
+kubectl replace -f nginx.yaml
+```
+
+### Declarative object configuration
+- Faz apply em uma pastas com os manifests
+```
+kubectl diff -f configs/
+kubectl apply -f configs/
+Recursive
+kubectl diff -R -f configs/
+kubectl apply -R -f configs/
 ```
 
 ## Verificando os namespaces e pods
@@ -134,176 +151,6 @@ kubectl get pod nginx -o yaml > meu-primeiro.yaml
 Será criado um novo arquivo chamado ``meu-primeiro.yaml``, resultante do redirecionamento da saída do comando ``kubectl get pod nginx -o yaml``.
 
 Abrindo o arquivo com ``vim meu-primeiro.yaml`` (você pode utilizar o editor que você preferir), teremos o seguinte conteúdo.
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  creationTimestamp: "2020-05-12T05:29:38Z"
-  labels:
-    run: nginx
-  managedFields:
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:labels:
-          .: {}
-          f:run: {}
-      f:spec:
-        f:containers:
-          k:{"name":"nginx"}:
-            .: {}
-            f:image: {}
-            f:imagePullPolicy: {}
-            f:name: {}
-            f:resources: {}
-            f:terminationMessagePath: {}
-            f:terminationMessagePolicy: {}
-        f:dnsPolicy: {}
-        f:enableServiceLinks: {}
-        f:restartPolicy: {}
-        f:schedulerName: {}
-        f:securityContext: {}
-        f:terminationGracePeriodSeconds: {}
-    manager: kubectl
-    operation: Update
-    time: "2020-05-12T05:29:38Z"
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:status:
-        f:conditions:
-          k:{"type":"ContainersReady"}:
-            .: {}
-            f:lastProbeTime: {}
-            f:lastTransitionTime: {}
-            f:status: {}
-            f:type: {}
-          k:{"type":"Initialized"}:
-            .: {}
-            f:lastProbeTime: {}
-            f:lastTransitionTime: {}
-            f:status: {}
-            f:type: {}
-          k:{"type":"Ready"}:
-            .: {}
-            f:lastProbeTime: {}
-            f:lastTransitionTime: {}
-            f:status: {}
-            f:type: {}
-        f:containerStatuses: {}
-        f:hostIP: {}
-        f:phase: {}
-        f:podIP: {}
-        f:podIPs:
-          .: {}
-          k:{"ip":"10.44.0.1"}:
-            .: {}
-            f:ip: {}
-        f:startTime: {}
-    manager: kubelet
-    operation: Update
-    time: "2020-05-12T05:29:43Z"
-  name: nginx
-  namespace: default
-  resourceVersion: "1673991"
-  selfLink: /api/v1/namespaces/default/pods/nginx
-  uid: 36506f7b-1f3b-4ee8-b063-de3e6d31bea9
-spec:
-  containers:
-  - image: nginx
-    imagePullPolicy: Always
-    name: nginx
-    resources: {}
-    terminationMessagePath: /dev/termination-log
-    terminationMessagePolicy: File
-    volumeMounts:
-    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-      name: default-token-nkz89
-      readOnly: true
-  dnsPolicy: ClusterFirst
-  enableServiceLinks: true
-  nodeName: docker-02
-  priority: 0
-  restartPolicy: Always
-  schedulerName: default-scheduler
-  securityContext: {}
-  serviceAccount: default
-  serviceAccountName: default
-  terminationGracePeriodSeconds: 30
-  tolerations:
-  - effect: NoExecute
-    key: node.kubernetes.io/not-ready
-    operator: Exists
-    tolerationSeconds: 300
-  - effect: NoExecute
-    key: node.kubernetes.io/unreachable
-    operator: Exists
-    tolerationSeconds: 300
-  volumes:
-  - name: default-token-nkz89
-    secret:
-      defaultMode: 420
-      secretName: default-token-nkz89
-status:
-  conditions:
-  - lastProbeTime: null
-    lastTransitionTime: "2020-05-12T05:29:38Z"
-    status: "True"
-    type: Initialized
-  - lastProbeTime: null
-    lastTransitionTime: "2020-05-12T05:29:43Z"
-    status: "True"
-    type: Ready
-  - lastProbeTime: null
-    lastTransitionTime: "2020-05-12T05:29:43Z"
-    status: "True"
-    type: ContainersReady
-  - lastProbeTime: null
-    lastTransitionTime: "2020-05-12T05:29:38Z"
-    status: "True"
-    type: PodScheduled
-  containerStatuses:
-  - containerID: docker://2719e2bc023944ee8f34db538094c96b24764a637574c703e232908b46b12a9f
-    image: nginx:latest
-    imageID: docker-pullable://nginx@sha256:86ae264c3f4acb99b2dee4d0098c40cb8c46dcf9e1148f05d3a51c4df6758c12
-    lastState: {}
-    name: nginx
-    ready: true
-    restartCount: 0
-    started: true
-    state:
-      running:
-        startedAt: "2020-05-12T05:29:42Z"
-  hostIP: 172.16.83.13
-  phase: Running
-  podIP: 10.44.0.1
-  podIPs:
-  - ip: 10.44.0.1
-  qosClass: BestEffort
-  startTime: "2020-05-12T05:29:38Z"
-```
-
-Observando o arquivo anterior, notamos que este reflete o **estado** do *pod*. Nós desejamos utilizar tal arquivo apenas como um modelo, e sendo assim, podemos apagar as entradas que armazenam dados de estado desse *pod*, como *status* e todas as demais configurações que são específicas dele. O arquivo final ficará com o conteúdo semelhante a este:
-
-```yaml
-  apiVersion: v1
-  kind: Pod
-  metadata:
-    creationTimestamp: null
-    labels:
-      run: nginx
-    name: nginx
-  spec:
-    containers:
-    - image: nginx
-      name: nginx
-      resources: {}
-    dnsPolicy: ClusterFirst
-    restartPolicy: Always
-  status: {}
-```
 
 Vamos agora remover o nosso *pod* com o seguinte comando.
 
@@ -454,31 +301,6 @@ Como é possível observar, há dois *services* no nosso *cluster*: o primeiro �
 ```
 curl 10.105.41.192
 
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-</style>
-</head>
-<body>
-<h1>Welcome to nginx!</h1>
-<p>If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.</p>
-
-<p>For online documentation and support please refer to
-<a href="http://nginx.org/">nginx.org</a>.<br/>
-Commercial support is available at
-<a href="http://nginx.com/">nginx.com</a>.</p>
-
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
 ```
 
 Este *pod* está disponível para acesso a partir de qualquer nó do *cluster*.

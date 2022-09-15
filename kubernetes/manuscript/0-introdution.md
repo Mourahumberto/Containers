@@ -82,3 +82,12 @@ O melhor *app* para executar em contêiner, principalmente no k8s, são aplicaç
 - **Deployment**: É um dos principais *controllers* utilizados. O *Deployment*, em conjunto com o *ReplicaSet*, garante que determinado número de réplicas de um pod esteja em execução nos nós workers do cluster. Além disso, o Deployment também é responsável por gerenciar o ciclo de vida das aplicações, onde características associadas a aplicação, tais como imagem, porta, volumes e variáveis de ambiente, podem ser especificados em arquivos do tipo *yaml* ou *json* para posteriormente serem passados como parâmetro para o ``kubectl`` executar o deployment. Esta ação pode ser executada tanto para criação quanto para atualização e remoção do deployment;
 
 - **Jobs e CronJobs**: são objetos responsáveis pelo gerenciamento de jobs isolados ou recorrentes.
+
+## Campos necessários para um manifesto
+
+- In the .yaml file for the Kubernetes object you want to create, you'll need to set values for the following fields:
+
+apiVersion - Qual versão do api kubernetes você está usando pra criar o objeto.
+kind - qual tipo de recurso você deseja criar
+metadata - Ele ajuda a depois você identificar o seu objeto, including a name string, UID, and optional namespace
+spec - Qual estado você deseja para o seu objeto
