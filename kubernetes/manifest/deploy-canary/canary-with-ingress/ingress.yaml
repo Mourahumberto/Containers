@@ -1,0 +1,88 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example
+  namespace: default
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: meu.dns.com.br
+      http:
+        paths:
+          - backend:
+              service:
+                name: helloflask
+                port:
+                  number: 5000
+            path: /
+            pathType: Prefix
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-canary
+  namespace: default
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-by-header: "x-region"
+    nginx.ingress.kubernetes.io/canary-by-header-value: "us-east"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: meu.dns.com.br
+      http:
+        paths:
+          - backend:
+              service:
+                name: helloflask-canary
+                port:
+                  number: 5000
+            path: /
+            pathType: Prefix
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: example-canary
+#   namespace: default
+#   annotations:
+#     ingress.kubernetes.io/rewrite-target: /
+#     nginx.ingress.kubernetes.io/canary: "true"
+#     nginx.ingress.kubernetes.io/canary-weight: "20"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - host: meu.dns.com.br
+#       http:
+#         paths:
+#           - backend:
+#               service:
+#                 name: helloflask-canary
+#                 port:
+#                   number: 5000
+#             path: /
+#             pathType: Prefix
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: example-canary
+#   namespace: default
+#   annotations:
+#     ingress.kubernetes.io/rewrite-target: /
+#     nginx.ingress.kubernetes.io/canary: "true"
+#     nginx.ingress.kubernetes.io/canary-by-cookie: "my-cookie" 
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - host: meu.dns.com.br
+#       http:
+#         paths:
+#           - backend:
+#               service:
+#                 name: helloflask-canary
+#                 port:
+#                   number: 5000
+#             path: /
+#             pathType: Prefix

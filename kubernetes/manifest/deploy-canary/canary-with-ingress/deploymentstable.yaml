@@ -31,35 +31,18 @@ spec:
               memory: "300M"
               cpu: "200m"
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
-  name: helloflask-canary
+  name: helloflask
   labels:
     app: helloflask
 spec:
-  replicas: 2
+  ports:
+    - port: 5000 # the port that this service should serve on
+      targetPort: 5000 #Container Port
+      protocol: TCP
   selector:
-    matchLabels:
-      app: helloflask
-  template:
-    metadata:
-      labels:
-        app: helloflask
-        tier: backend
-        track: canary
-    spec:
-      # nodeSelector:
-      #   service: video-ingest
-      containers:
-        - name: helloflask
-          image: netomoura10/helloflask:v2
-          ports:
-            - containerPort: 5000
-          resources:
-            requests:
-              memory: "200M"
-              cpu: "100m"
-            limits:
-              memory: "300M"
-              cpu: "200m"
+    app: helloflask
+    tier: backend
+    track: stable
