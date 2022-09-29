@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloflask-stable
+  labels:
+    app: helloflask
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: helloflask
+  template:
+    metadata:
+      labels:
+        app: helloflask
+        tier: backend
+        track: stable
+    spec:
+      # nodeSelector:
+      #   service: video-ingest
+      containers:
+        - name: helloflask
+          image: netomoura10/helloflask:v1
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              memory: "200M"
+              cpu: "100m"
+            limits:
+              memory: "300M"
+              cpu: "200m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloflask-canary
+  labels:
+    app: helloflask
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: helloflask
+  template:
+    metadata:
+      labels:
+        app: helloflask
+        tier: backend
+        track: canary
+    spec:
+      # nodeSelector:
+      #   service: video-ingest
+      containers:
+        - name: helloflask
+          image: netomoura10/helloflask:v2
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              memory: "200M"
+              cpu: "100m"
+            limits:
+              memory: "300M"
+              cpu: "200m"

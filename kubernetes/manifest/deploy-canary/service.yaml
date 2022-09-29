@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloflask
+  labels:
+    app: helloflask
+    
+spec:
+  ports:
+    - port: 5000 # the port that this service should serve on
+      targetPort: 5000 #Container Port
+      protocol: TCP
+  selector:
+    app: helloflask
+    tier: backend
