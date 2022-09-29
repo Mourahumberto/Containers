@@ -7,8 +7,7 @@ app = Flask(__name__)
 @app.route("/")
 def hello():
     print ("Connect")
-    time.sleep(3)
-    return "Hello 3 sec."
+    return "APP V1"
 
 
 if __name__ == "__main__":
