@@ -7,7 +7,7 @@ app = Flask(__name__)
 @app.route("/")
 def hello():
     print ("Connect")
-    return "APP V1"
+    return "APP V2"
 
 
 if __name__ == "__main__":
