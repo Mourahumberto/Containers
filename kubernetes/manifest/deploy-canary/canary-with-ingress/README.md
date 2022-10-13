@@ -11,4 +11,6 @@ caso queira usar uma delas comente uma e descomente a outra.
 curl -H "Host: meu.dns.com.br" http://<ingress>:<port>/
 #usando a opção com header
 curl -H "Host: meu.dns.com.br" -H "x-region: us-east" http://<ingress>:<port>/
+# cookie
+curl -s -H "Host: canary.example.com" --cookie "my_cookie=always" http://<IP_ADDRESS>:<NODE_PORT>/echo
 ```

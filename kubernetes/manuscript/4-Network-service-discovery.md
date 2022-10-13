@@ -1,6 +1,39 @@
-# Services
 
-## Criando um service ClusterIP
+# Services
+- É uma maneira de de expor um conjunto de app, em um endpoint único, desta forma é dado um dns interno e um ip único que balancea a carga entre os pods.
+- O service usa selectores para encontar os pods que serão usados para balancear a carga, desta forma ele trabalha como service discovery.
+
+## Multi-Port Services
+- Um serviço pode expor multiplas portas.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app.kubernetes.io/name: MyApp
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 9376
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 9377
+```
+## Discovering services
+- existem duas formas de o Pod encontrar services dentro do cluster. Um é através de variáveis de ambientes todo container tem as variáveis de ambientes com o ip do serviço
+e a porta desta forma:"{SVCNAME}_SERVICE_HOST and {SVCNAME}_SERVICE_PORT". è importante saber que isso acontece quando o serviço foi criado antes do pod. se o service
+for criado depois do pod, pode ser que não tenha a vari´qavel do service dentro do container.
+- Outra forma de encontrar os services é a través do DNS, todo service tem um dns ***myservice.myns***
+- O Kubernetes também oferece suporte a registros DNS SRV (Serviço) para portas nomeadas. Se o serviço my-service.my-ns tiver uma porta chamada http com o protocolo definido como TCP, você poderá fazer uma consulta DNS SRV para _http._tcp.my-service.my-ns para descobrir o número da porta para http, conforme bem como o endereço IP.
+
+
+## Tipo ClusterIp
+- Expõe o service com um ip interno visto dentro do cluster.
 
 Vamos criar um pod a partir de um pod template utilizando os seguintes comandos:
 
@@ -9,87 +42,7 @@ kubectl run nginx --image nginx --dry-run=client -o yaml > pod-template.yaml
 kubectl create -f pod-template.yaml
 pod/nginx created
 ```
-
-Expondo o pod do Nginx.
-
-```
-kubectl expose pod nginx --port=80
-
-service/nginx exposed
-```
-
-Obtendo informações do service.
-
-```
-kubectl get svc
-
-NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
-kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP   25m
-nginx        ClusterIP   10.104.209.243   <none>        80/TCP    7m15s
-```
-
-Execute o seguinte comando para visualizar mais detalhes do service ``nginx``.
-
-```
-kubectl describe service nginx
-
-Name:              nginx
-Namespace:         default
-Labels:            run=nginx
-Annotations:       <none>
-Selector:          run=nginx
-Type:              ClusterIP
-IP:                10.104.209.243
-Port:              <unset>  80/TCP
-TargetPort:        80/TCP
-Endpoints:         10.46.0.0:80
-Session Affinity:  None
-Events:            <none>
-```
-
-Acessando o Ningx. Altere o IP do cluster no comando a seguir de acordo com o seu ambiente.
-
-```
-curl 10.104.209.243
-
-...
-<title>Welcome to nginx!</title>
-...
-```
-Acessando fazendo port-foward no serviço
-
-```
-kubectl port-foward svc/nginx 9090:80 -n onamespace
-```
-
-Acessando fazendo port-foward no pod
-```
-kubectl port-foward podname <portlocal>:<port-pod> -n onamespace
-```
-
-Acesse o log do Nginx.
-
-```
-kubectl logs -f nginx
-
-10.40.0.0 - - [10/May/2020:17:31:56 +0000] "GET / HTTP/1.1" 200 612 "-" "curl/7.58.0" "-"
-```
-
-Remova o serviço criado anteriormente.
-
-```
-kubectl delete svc nginx
-
-service "nginx" deleted
-```
-
-Agora vamos criar nosso service ``ClusterIP``, porém vamos criar um arquivo yaml com suas definições:
-
-```
-vim primeiro-service-clusterip.yaml
-```
-
-Informe o seguinte conteúdo:
+- Criando o service:
 
 ```yaml
 apiVersion: v1
@@ -109,8 +62,6 @@ spec:
   type: ClusterIP
 ```
 
-Criando o service:
-
 ```
 kubectl create -f primeiro-service-clusterip.yaml
 
@@ -125,33 +76,6 @@ kubectl get services
 NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 kubernetes        ClusterIP   10.96.0.1       <none>        443/TCP   28m
 nginx-clusterip   ClusterIP   10.109.70.243   <none>        80/TCP    71s
-```
-
-Visualizando os detalhes do service:
-
-```
-kubectl describe service nginx-clusterip
-
-Name:              nginx-clusterip
-Namespace:         default
-Labels:            run=nginx
-Annotations:       <none>
-Selector:          run=nginx
-Type:              ClusterIP
-IP:                10.109.70.243
-Port:              <unset>  80/TCP
-TargetPort:        80/TCP
-Endpoints:         10.46.0.1:80
-Session Affinity:  None
-Events:            <none>
-```
-
-Removendo o service:
-
-```
-kubectl delete -f primeiro-service-clusterip.yaml
-
-service "nginx-clusterip" deleted
 ```
 
 Agora vamos mudar um detalhe em nosso manifesto, vamos brincar com o nosso ``sessionAffinity``:
@@ -201,25 +125,6 @@ kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP   29m
 nginx-clusterip   ClusterIP   10.96.44.114   <none>        80/TCP    7s
 ```
 
-Visualizando os detalhes do service:
-
-```
-kubectl describe service nginx
-
-Name:              nginx-clusterip
-Namespace:         default
-Labels:            run=nginx
-Annotations:       <none>
-Selector:          run=nginx
-Type:              ClusterIP
-IP:                10.96.44.114
-Port:              <unset>  80/TCP
-TargetPort:        80/TCP
-Endpoints:         10.46.0.1:80
-Session Affinity:  ClientIP
-Events:            <none>
-```
-
 Com isso, agora temos como manter a sessão, ou seja, ele irá manter a conexão com o mesmo pod, respeitando o IP de origem do cliente.
 
 Caso precise, é possível alterar o valor do timeout para o ``sessionAffinity`` (O valor padrão é de 10800 segundos, ou seja 3 horas), apenas adicionando a configuração abaixo.
@@ -229,48 +134,9 @@ Caso precise, é possível alterar o valor do timeout para o ``sessionAffinity``
     clientIP:
       timeoutSeconds: 10
 ```
-
-Agora podemos remover o service:
-
-```
-kubectl delete -f primeiro-service-clusterip.yaml
-
-service "nginx-clusterip" deleted
-```
-
 ## Criando um service NodePort
 
 Execute o comando a seguir para exportar o pod usando o service NodePort. Lembrando que o range de portas internas é entre 30000/TCP a 32767/TCP.
-
-```
-kubectl expose pods nginx --type=NodePort --port=80
-
-service/nginx exposed
-```
-
-Obtendo informações do service:
-
-```
-kubectl get svc
-
-NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP        29m
-nginx        NodePort    10.101.42.230   <none>        80:31858/TCP   5s
-```
-
-Removendo o service:
-
-```
-kubectl delete svc nginx
-
-service "nginx" deleted
-```
-
-Agora vamos criar um service NodePort, porém vamos criar um manifesto yaml com suas definições.
-
-```
-vim primeiro-service-nodeport.yaml
-```
 
 O conteúdo deve ser o seguinte.
 
@@ -313,68 +179,9 @@ kubernetes       ClusterIP   10.96.0.1      <none>        443/TCP        30m
 nginx-nodeport   NodePort    10.102.91.81   <none>        80:31111/TCP   7s
 ```
 
-Visualizando os detalhes do service:
-
-```
-kubectl describe service nginx
-
-Name:                     nginx-nodeport
-Namespace:                default
-Labels:                   run=nginx
-Annotations:              <none>
-Selector:                 run=nginx
-Type:                     NodePort
-IP:                       10.102.91.81
-Port:                     <unset>  80/TCP
-TargetPort:               80/TCP
-NodePort:                 <unset>  31111/TCP
-Endpoints:                10.46.0.1:80
-Session Affinity:         None
-External Traffic Policy:  Cluster
-Events:                   <none>
-```
-
-Removendo o service:
-
-```
-kubectl delete -f primeiro-service-nodeport.yaml
-
-service "nginx-nodeport" deleted
-```
-
 ## Criando um service LoadBalancer
 
 Execute o comando a seguir para exportar o pod usando o service LoadBalancer.
-
-```
-kubectl expose pod nginx --type=LoadBalancer --port=80
-
-service/nginx exposed
-```
-
-Obtendo informações do service:
-
-```
-kubectl get svc
-
-NAME         TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-kubernetes   ClusterIP      10.96.0.1       <none>        443/TCP        32m
-nginx        LoadBalancer   10.110.198.89   <pending>     80:30728/TCP   4s
-```
-
-Removendo o service:
-
-```
-kubectl delete svc nginx
-
-service "nginx" deleted
-```
-
-Agora vamos criar service LoadBalancer, porém vamos criar um yaml com suas definições.
-
-```
-vim primeiro-service-loadbalancer.yaml
-```
 
 O conteúdo deve ser o seguinte.
 
@@ -415,35 +222,6 @@ kubectl get services
 NAME                 TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
 kubernetes           ClusterIP      10.96.0.1      <none>        443/TCP        33m
 nginx-loadbalancer   LoadBalancer   10.96.67.165   <pending>     80:31222/TCP   4s
-```
-
-Visualizando informações do service:
-
-```
-kubectl describe service nginx
-
-Name:                     nginx-loadbalancer
-Namespace:                default
-Labels:                   run=nginx
-Annotations:              <none>
-Selector:                 run=nginx
-Type:                     LoadBalancer
-IP:                       10.96.67.165
-Port:                     <unset>  80/TCP
-TargetPort:               80/TCP
-NodePort:                 <unset>  31222/TCP
-Endpoints:                10.46.0.1:80
-Session Affinity:         None
-External Traffic Policy:  Cluster
-Events:                   <none>
-```
-
-Removendo o service:
-
-```
-kubectl delete -f primeiro-service-loadbalancer.yaml
-
-service "nginx-loadbalancer" deleted
 ```
 
 ## EndPoint
@@ -497,3 +275,26 @@ kubectl delete service nginx
 service "nginx" deleted
 ```
 
+# Network Policy
+- Você consegue definir políticas de rede, de ingress e egress para os pods e namespaces. 
+- Quando definimos uma política de rede baseada em pod ou namespace, utiliza-se um selector para especificar qual tráfego é permitido de e para o(s) Pod(s) que correspondem ao seletor.
+- Quando uma política de redes baseada em IP é criada, nós definimos a política baseada em blocos de IP (faixas CIDR).
+- por padrão todos os pods são não isolados.
+Ex: polices
+https://kubernetes.io/pt-br/docs/concepts/services-networking/network-policies/
+
+# DNS para Services e Pods
+- O kubernetes cria um nome no dns para cada pod e service.
+- o DNS do kubernetes pode ser visto em todos os pods, o kubelet cria o arquivo em todos os pods. /etc/resolv.conf
+- Ele herda também o dns do próprio host (pelo que eu vi)
+
+- Services records: my-svc.my-namespace.svc.cluster-domain.example e _my-port-name._my-port-protocol.my-svc.my-namespace.svc.cluster-domain.example
+
+## Pod's DNS Policy
+- você pode criar policys para que os pods não usem o dns padrão do kubernetes e use um dns server criado por você https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config
+
+## Routing em uma mesma zona
+https://kubernetes.io/docs/concepts/services-networking/topology-aware-hints/
+
+## routing no mesmo nó
+https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/

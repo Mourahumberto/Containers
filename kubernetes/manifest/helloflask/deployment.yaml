@@ -18,7 +18,7 @@ spec:
       #   service: video-ingest
       containers:
         - name: helloflask
-          image: netomoura10/helloflask:1.0
+          image: netomoura10/helloflask:v1
           ports:
             - containerPort: 5000
           resources:

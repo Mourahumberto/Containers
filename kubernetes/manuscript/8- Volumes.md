@@ -1,6 +1,6 @@
 # Volumes
 
-Os Discos no container é ephemero. No caso quando um pod é restartado o pod volta ao estado inicial do seu storage.
+Os Discos no container são ephemeros. No caso quando um pod é restartado o pod volta ao estado inicial do seu storage.
 Porém os Persistents volumes existem para que o volume existe independente do tempo de vida de um pod.
 Tipos de volumes: ``https://kubernetes.io/docs/concepts/storage/volumes/``
 
@@ -30,12 +30,6 @@ Kubernetes supports several types of volumes.
 - secret
 - storageOS (deprecated)
 - vsphereVolume
-
-## Access Modes
- - ReadWriteOnce(RWO) — volume can be mounted as read-write by a single node.
- - ReadOnlyMany(ROX) — volume can be mounted read-only by many nodes.
- - ReadWriteMany(RWX) — volume can be mounted as read-write by many nodes.
- - ReadWriteOncePod(RWOP) — volume can be mounted as read-write by a single Pod.
 
 ## Persistent Volumes
 - Um **PersistentVolume (PV)** é uma parte do armazenamento no cluster que foi provisionado por um administrador ou provisionado dinamicamente usando **storage class**. O PV é um recurso assim como um nó e tem um ciclo de vida independente de um pod.
