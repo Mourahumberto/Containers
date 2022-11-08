@@ -1,11 +1,11 @@
-## Sumário
-- [Criando um usuário no Kubernetes](#criando-um-usuário-no-kubernetes)
-- [RBAC](#rbac)
-  - [Role e ClusterRole](#role-e-clusterrole)
-  - [RoleBinding e ClusterRoleBinding](#rolebinding-e-clusterrolebinding)
+# RBAC
+- O Kubernetes RBAC é um controle de segurança fundamental para garantir que os usuários e cargas de trabalho do cluster tenham acesso apenas aos recursos necessários para executar suas funções. É importante garantir que, ao projetar permissões para usuários do cluster, o administrador do cluster entenda as áreas em que o escalonamento de privilégios pode ocorrer, para reduzir o risco de acesso excessivo que leva a incidentes de segurança.
+- RBAC pode ser aplicado a pessoas e a services accounts
+- Sempre que possivel user RoleBindings no lugar de clusterrolebindings, para dar permissões a namespaces e não ao cluster todo.
 
-
-# Criando um usuário no Kubernetes
+## Criando um usuário no Kubernetes
+- habilitando o CSR https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/
+- criando um usuário no minikube: https://medium.com/@HoussemDellai/rbac-with-kubernetes-in-minikube-4deed658ea7b
 
 Para criar um usuário no Kubernetes, vamos precisar gerar um CSR (*Certificate Signing Request*) para o usuário. O usuário que vamos utilizar como exemplo é o ``linuxtips``.
 
@@ -19,14 +19,15 @@ Agora vamos fazer o request do CSR no cluster:
 
 ```
 cat <<EOF | kubectl apply -f -
-apiVersion: certificates.k8s.io/v1beta1
+apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
   name: linuxtips-csr
+  namespace: default
 spec:
   groups:
-  - system:authenticated
   request: $(cat linuxtips.csr | base64 | tr -d '\n')
+  signerName: kubernetes.io/kube-apiserver-client
   usages:
   - client auth
 EOF
@@ -344,3 +345,4 @@ admin-user   ClusterRole/cluster-admin   21m
 Pronto! Agora o usuário **admin-user** foi associado ao ``ClusterRoleBinding`` **admin-user** com a função **cluster-admin**.
 
 Lembrando que toda vez que nos referirmos ao ``ServiceAccount``, estamos referindo à uma conta de usuário.
+

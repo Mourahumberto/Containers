@@ -123,6 +123,17 @@ kubectl top pod --namespace=default nginx-f89759699-77v8b
 NAME                     CPU(cores)   MEMORY(bytes)
 nginx-85f7fb6b45-b6dsk   201m         226Mi
 ```
+### Limitando recurso de hd
+- https://kubernetes.io/pt-br/docs/concepts/configuration/manage-resources-containers/#armazenamento-ef%C3%AAmero-local
+
+### Limitando processos no container PID
+- https://kubernetes.io/pt-br/docs/concepts/configuration/manage-resources-containers/#limita%C3%A7%C3%A3o-de-pid
+
+### Limitando recursos Estendidos
+- São recursos que você estipula exemplo cada nó só tem 5 xpto ou o cluster tem 20 xpto, ai nos pods você divide esses xpto
+- https://kubernetes.io/pt-br/docs/concepts/configuration/manage-resources-containers/#recursos-estendidos
+
+###
 
 # Namespaces
 
@@ -134,23 +145,7 @@ Vamos criar nosso primeiro namespaces:
 
 ```
 kubectl create namespace primeiro-namespace
-
-namespace/primeiro-namespace created
 ```
-
-Vamos listar todos os namespaces do kubernetes:
-
-```
-kubectl get namespaces
-
-NAME                 STATUS   AGE
-default              Active   55m
-kube-node-lease      Active   56m
-kube-public          Active   56m
-kube-system          Active   56m
-primeiro-namespace   Active   5s
-```
-
 Pegando mais informações do nosso namespace:
 
 ```
