@@ -35,3 +35,6 @@ como restrições de hadware, software, políticas, especificações, afinidade 
       1. Como motivação, caso você queira separ replicas do mesmo deployment, porém quer deixar as réplicas próximos de outros deployments ou zonas.
       2. https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
 
+## Pod Priority and Preemption
+- Os pods do seu sistema pode ter prioridade a cima de outros pods. indicando a importância dele em relação a outros pods.
+- doc: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/

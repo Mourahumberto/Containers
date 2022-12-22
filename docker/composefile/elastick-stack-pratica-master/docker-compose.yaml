@@ -69,7 +69,21 @@ services:
   web:
     build: ./app
     ports:
-      - "5000:5000"
+      - "5001:5000"
+    networks:
+    - elastic
+
+  webgolangfinal2:
+    build: ./app2
+    ports:
+      - "5002:5000"
+    networks:
+    - elastic
+
+  webgolangbanco:
+    build: ./app3
+    ports:
+      - "5003:5000"
     networks:
     - elastic
 

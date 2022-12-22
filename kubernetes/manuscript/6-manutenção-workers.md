@@ -1,4 +1,5 @@
 # Kubectl taint
+doc: https://kubernetes.io/pt-br/docs/concepts/scheduling-eviction/taint-and-toleration/
 
 O **Taint** nada mais é do que adicionar propriedades ao nó do cluster para impedir que os pods sejam alocados em nós inapropriados.
 
