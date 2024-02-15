@@ -80,12 +80,12 @@ services:
     networks:
     - elastic
 
-  webgolangbanco:
-    build: ./app3
-    ports:
-      - "5003:5000"
-    networks:
-    - elastic
+  # webgolangbanco:
+  #   build: ./app3
+  #   ports:
+  #     - "5003:5000"
+  #   networks:
+  #   - elastic
 
 volumes:
   esdata:
