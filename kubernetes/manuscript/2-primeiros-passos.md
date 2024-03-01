@@ -3,6 +3,10 @@
 ## Exibindo informações detalhadas sobre os nós
 
 ```
+kubectl get nodes
+```
+
+```
 kubectl describe node [nome_do_no]
 ```
 
@@ -43,7 +47,8 @@ kubectl replace -f nginx.yaml
 ```
 kubectl diff -f configs/
 kubectl apply -f configs/
-Recursive
+
+#Recursive
 kubectl diff -R -f configs/
 kubectl apply -R -f configs/
 ```
@@ -75,6 +80,12 @@ kubectl get pods --all-namespaces -o wide
 
 NAMESPACE     NAME                                READY   STATUS    RESTARTS   AGE   IP             NODE        NOMINATED NODE   READINESS GATES
 default       nginx                               1/1     Running   0          24m   10.44.0.1      docker-02   <none>           <none>
+```
+
+Verificando tudo que tem em um namespace
+
+```
+kubectl get all -n kube-system
 ```
 
 ## Executando nosso primeiro pod no k8s
@@ -140,7 +151,7 @@ No resultado do comando anterior é possível observar que a execução do nginx
 
 ## Efetuar o dump de um objeto em formato YAML
 
-Assim como quando se está trabalhando com *stacks* no Docker Swarm, normalmente recursos no k8s são declarados em arquivos **YAML** ou **JSON** e depois manipulados através do ``kubectl``.
+Normalmente recursos no k8s são declarados em arquivos **YAML** ou **JSON** e depois manipulados através do ``kubectl``.
 
 Para nos poupar o trabalho de escrever o arquivo inteiro, pode-se utilizar como *template* o *dump* de um objeto já existente no k8s, como mostrado a seguir.
 

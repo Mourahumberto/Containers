@@ -85,7 +85,7 @@ O melhor *app* para executar em contêiner, principalmente no k8s, são aplicaç
 
 ## Campos necessários para um manifesto
 
-- In the .yaml file for the Kubernetes object you want to create, you'll need to set values for the following fields:
+- Você deve criar um arquivo .yaml para criar objetos no K8S, você irá precisar criar pelo menos os valores do campo a baixo:
 
 apiVersion - Qual versão do api kubernetes você está usando pra criar o objeto.
 kind - qual tipo de recurso você deseja criar
