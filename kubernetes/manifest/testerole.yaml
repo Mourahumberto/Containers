@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::730335200285:role/k8s-s3-role
+  name: k8s-s3-role
+  namespace: uniq-core-platform
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3-teste
+  labels:
+    app: s3-teste
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s3-teste
+  template:
+    metadata:
+      labels:
+        app: s3-teste
+    spec:
+      serviceAccountName: k8s-s3-role
+      containers:
+      - name: s3-teste
+        image: netomoura10/quarkus:amazon-s3-quickstart
+        imagePullPolicy: Always
+        env:
+          - name: quarkus.s3.aws.region
+            value: "us-east-1"
+          - name: quarkus.s3.aws.credentials.type
+            value: "profile"
+          - name: quarkus.s3.path-style-access
+            value: "true"
+          - name: bucket.name
+            value: "teste-uniq-role"
+          # - name: AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
+          #   value: "/var/run/secrets/eks.amazonaws.com/serviceaccount/token"  
+        ports:
+        - containerPort: 8080
+        #curl localhost:8080/s3

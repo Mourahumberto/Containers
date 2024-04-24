@@ -1,6 +1,8 @@
 # Ingress
 - É uma forma de expor suas app para fora do cluster, com várias formas de roteamento e ssl/tls, e com uso de dns.
 - O resource ingress não tem finaidade se não ouver um ingress controler: https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
+- Helm de como instalar ingress na AWS [DOC](../../helm/nginx/README.md)
+- Instalando com manifesto ingress na AWS [DOC](../k8s-extend/nginx/README.md)
 
 EX: simples usando nginx Ingress
 ```yaml
@@ -30,6 +32,13 @@ spec:
 - existem várias formas de fazer redirect no ingress
 - Path tyes: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
 - hostname wildcards: https://kubernetes.io/docs/concepts/services-networking/ingress/#hostname-wildcards
+- Docs Legais
+  - [Path matching with regex](https://docs.nginx.com/nginx-ingress-controller/tutorials/ingress-path-regex-annotation/)
+  - [Full URL Path Preservation](https://medium.com/@megaurav25/url-redirection-with-full-url-path-preservation-using-ingress-nginx-493f18523c99)
+  - [Multi Paths](https://devpress.csdn.net/cloud/62fcb352c677032930801ba6.html)
+  - [Multi Paths and ingress](https://copyprogramming.com/howto/kubernetes-ingress-with-multiple-target-rewrite)
+  - [rewrite nginx doc](https://kubernetes.github.io/ingress-nginx/examples/rewrite/)
+
 
 ### Ingress class
 - O kubernetes pode ter multiplos ingress controllers, e você pode especificar cada um com o ingress-class
@@ -138,3 +147,82 @@ spec:
             port:
               number: 80
 ```
+
+## Nginx com features de firewall
+- É importante colocar algumas regras de firewall no seu nginx, [annotations](https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md) suportados no nginx.
+
+### Rate Limit
+- ferramenta importante contra atacks ddos. Pois ela coloca um limite máximo de reqs por minutos de um determinado IP.
+- no anotation na criação do ingress colocar a seguinte anotação.
+- Docs legais:
+  -[rate limit e teste](https://www.nginx.com/blog/microservices-march-protect-kubernetes-apis-with-rate-limiting/)
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/limit-rpm: "10"
+
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /teste
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx
+            port:
+              number: 80
+      - path: /teste2
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx2
+            port:
+              number: 80
+```
+
+### modsecurity no nginx [WAF](https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md#modsecurity)
+
+### Habilitando o modsecurity o modsecurity, com os manifestos.
+
+- Exemplo que eu me basiei [DOC](https://thelinuxnotes.com/index.php/how-to-install-and-configure-modsecurity-waf-in-kubernetes/#google_vignette)
+
+- Primeiro você altera o configmap na parte data: e adiciona algumas labels.
+```
+data:
+  allow-snippet-annotations: "true"
+  enable-modsecurity: "true"
+  enable-owasp-modsecurity-crs: "true"
+```
+
+- Segundo você cria annotations em seu ingress
+```
+  annotations:
+    nginx.ingress.kubernetes.io/limit-rpm: "40"
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"   
+    nginx.ingress.kubernetes.io/modsecurity-snippet: |
+     SecDebugLog /tmp/modsec_debug.log 
+     SecRuleEngine On
+     SecRequestBodyAccess On
+```
+ex: [manifesto-controller](../k8s-extend/nginx/deploy-modsecurity.yaml)
+ex: [manifesto-app](../k8s-extend/nginx/app-modsecurity.yaml)
+
+- exemplo de curl teste para testar o modsecurity.
+```bash
+curl 'https://seudominio.com.br/seupath/?param="><script>alert(1);</script>'
+curl -X POST https://seudominio.com.br/seupath  -F "user='<script><alert>Hello></alert></script>'"
+```
+
+### DOCS interessantes
+- Exemplo de como criar sua própria regra [página-web](https://thelinuxnotes.com/index.php/how-to-install-and-configure-modsecurity-waf-in-kubernetes/#google_vignette)
+- configs mod-security [página web](https://github.com/owasp-modsecurity/ModSecurity/blob/v3/master/modsecurity.conf-recommended)
+- Anottations [página web](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#modsecurity)

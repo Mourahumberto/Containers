@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  ports:
+    - port: 80 # the port that this service should serve on
+      targetPort: 80 #Container Port
+      protocol: TCP
+  selector:
+    app: nginx
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx2
+  labels:
+    app: nginx2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx2
+  template:
+    metadata:
+      labels:
+        app: nginx2
+    spec:
+      containers:
+      - name: nginx2
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx2
+  labels:
+    app: nginx2
+spec:
+  ports:
+    - port: 80 # the port that this service should serve on
+      targetPort: 80 #Container Port
+      protocol: TCP
+  selector:
+    app: nginx2
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/limit-rpm: "10"
+    # nginx.ingress.kubernetes.io/use-regex: "true"
+    # nginx.ingress.kubernetes.io/modsecurity-snippet: |
+    # SecRuleEngine On
+    # SecRequestBodyLimit 15107200
+    # SecAuditLog /dev/stdout
+
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /teste
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx
+            port:
+              number: 80
+      - path: /teste2
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx2
+            port:
+              number: 80
+
+
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: minimal-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /
+#     nginx.ingress.kubernetes.io/limit-rpm: "2"
+# spec:
+#   ingressClassName: jenkins
+#   rules:
+#   - http:
+#       paths:
+#       - path: /jenkins
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: jenkins
+#             port:
+#               number: 8080
+
