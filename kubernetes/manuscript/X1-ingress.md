@@ -226,3 +226,4 @@ curl -X POST https://seudominio.com.br/seupath  -F "user='<script><alert>Hello><
 - Exemplo de como criar sua própria regra [página-web](https://thelinuxnotes.com/index.php/how-to-install-and-configure-modsecurity-waf-in-kubernetes/#google_vignette)
 - configs mod-security [página web](https://github.com/owasp-modsecurity/ModSecurity/blob/v3/master/modsecurity.conf-recommended)
 - Anottations [página web](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#modsecurity)
+
