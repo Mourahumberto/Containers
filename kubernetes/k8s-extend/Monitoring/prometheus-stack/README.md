@@ -189,6 +189,32 @@ Resumo: neste passo o prometheus irá ler o prometheus que está em outro cluste
           - 11.123.12.123:9090 # ou a porta que esteja disponibilizando no seu prometheus
 ```
 
+- Alteração para colocar persistente volume para o prometheus.
+```yaml
+   storageSpec:
+    # Using PersistentVolumeClaim
+    
+      volumeClaimTemplate: # Adição de volume persistente para o prometheus
+        spec:
+          storageClassName: gp2
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
+```
+- Criando persistência no grafana
+```yaml
+  persistence:
+    enabled: true
+    type: sts
+    storageClassName: "gp2"
+    accessModes:
+      - ReadWriteOnce
+    size: 20Gi
+    finalizers:
+      - kubernetes.io/pvc-protection
+```
+
 ## Dependencies
 
 By default this chart installs additional, dependent charts:
@@ -215,6 +241,6 @@ $ helm install -f values.yaml prometheus ./kube-prometheus-stack/ --debug --set 
 
 ```
 kubectl port-forward svc/alertmanager-operated 9093
-kubectl port-forward svc/prometheus-operated 9090
+kubectl port-forward svc/prometheus-operated 90
 kubectl port-forward deployment/prometheus-stack-grafana 3000
 ```
